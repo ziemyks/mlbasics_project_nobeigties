@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    flask \
+    flask-cors \
+    joblib \
+    numpy \
+    pandas \
+    scikit-learn \
+    lightgbm
+
+# Copy API code and model artefacts
+COPY api.py .
+COPY model_artefacts/ model_artefacts/
+
+EXPOSE 5050
+
+CMD ["python", "api.py"]

@@ -1,0 +1,8 @@
+fraud-ui/node_modules
+fraud-ui/.next
+__pycache__
+*.pyc
+.git
+data/
+ML_work_and_analysis.ipynb
+*.ipynb_checkpoints

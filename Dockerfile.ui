@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files and install deps
+COPY fraud-ui/package.json fraud-ui/package-lock.json ./
+RUN npm ci
+
+# Copy the rest of the app
+COPY fraud-ui/ .
+
+EXPOSE 3000
+
+ENV HOSTNAME=0.0.0.0
+CMD ["npm", "run", "dev"]
