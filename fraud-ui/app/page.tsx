@@ -54,6 +54,36 @@ const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // ─── Helper Components ───────────────────────────────────────────────────────
 
+function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-[#111827] border border-slate-700 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div className="p-4 border-b border-slate-800 flex justify-between items-center text-slate-200">
+          <h3 className="font-bold text-lg">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function Badge({
   children,
   variant,
@@ -328,7 +358,11 @@ function StatsPanel({ history }: { history: ProcessedTransaction[] }) {
 export default function FraudDetectionPage() {
   const [history, setHistory] = useState<ProcessedTransaction[]>([]);
   const [current, setCurrent] = useState<ProcessedTransaction | null>(null);
+  const [selectedTx, setSelectedTx] = useState<ProcessedTransaction | null>(
+    null
+  );
   const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
   const [speed, setSpeed] = useState(3000); // ms between transactions
   const [apiOk, setApiOk] = useState<boolean | null>(null);
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -387,25 +421,33 @@ export default function FraudDetectionPage() {
     // 4. Move to history
     await new Promise((r) => setTimeout(r, 500));
     setHistory((prev) => [tx, ...prev].slice(0, 50)); // keep last 50
-    setCurrent(null);
+    // We intentionally do NOT set current to null here.
   }, []);
 
   const startStream = useCallback(() => {
     setRunning(true);
+    runningRef.current = true;
     const loop = async () => {
+      if (!runningRef.current) return;
       try {
         await processOne();
       } catch {
         // API might be down, keep trying
       }
-      intervalRef.current = setTimeout(loop, speed);
+      if (runningRef.current) {
+        intervalRef.current = setTimeout(loop, speed);
+      }
     };
     loop();
   }, [processOne, speed]);
 
   const stopStream = useCallback(() => {
     setRunning(false);
-    if (intervalRef.current) clearTimeout(intervalRef.current);
+    runningRef.current = false;
+    if (intervalRef.current) {
+      clearTimeout(intervalRef.current);
+      intervalRef.current = null;
+    }
   }, []);
 
   return (
@@ -582,6 +624,12 @@ export default function FraudDetectionPage() {
                             {current.prediction.engineered_features.hour}:00
                           </span>
                         )}
+                        <button
+                          onClick={() => setSelectedTx(current)}
+                          className="mt-2 block w-full py-1.5 bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded hover:bg-blue-600/50 transition-all font-semibold"
+                        >
+                          🔍 View Deep Dive Details
+                        </button>
                       </div>
                     </div>
                   ) : current.stage === "scoring" ? (
@@ -623,10 +671,11 @@ export default function FraudDetectionPage() {
               history.map((tx) => (
                 <div
                   key={tx.id}
-                  className={`p-2.5 rounded-lg border text-xs animate-slide-in ${
+                  onClick={() => setSelectedTx(tx)}
+                  className={`p-2.5 rounded-lg border text-xs cursor-pointer hover:scale-[1.02] transition-transform animate-slide-in ${
                     tx.prediction?.is_fraud
-                      ? "bg-red-500/5 border-red-500/30"
-                      : "bg-green-500/5 border-green-500/30"
+                      ? "bg-red-500/5 border-red-500/30 hover:bg-red-500/10"
+                      : "bg-green-500/5 border-green-500/30 hover:bg-green-500/10"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -643,17 +692,7 @@ export default function FraudDetectionPage() {
                     <span>
                       {tx.raw.category.replace("_", " ")} · ${tx.raw.amt.toFixed(2)}
                     </span>
-                    <span className="font-mono">
-                      {((tx.prediction?.fraud_probability ?? 0) * 100).toFixed(
-                        1
-                      )}
-                      %
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-slate-600 mt-0.5">
-                    {tx.raw.city}, {tx.raw.state} ·{" "}
-                    {tx.prediction?.engineered_features.distance_km} km ·{" "}
-                    {tx.prediction?.engineered_features.hour}:00
+                    <span className="font-mono font-bold text-slate-300">DETAILS &gt;</span>
                   </div>
                 </div>
               ))
@@ -662,6 +701,90 @@ export default function FraudDetectionPage() {
           </div>
         </Card>
       </div>
+
+      <Modal
+        isOpen={!!selectedTx}
+        onClose={() => setSelectedTx(null)}
+        title={`Transaction Details: ${selectedTx?.id}`}
+      >
+        {selectedTx && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-slate-800/50 p-4 rounded-lg">
+              <div>
+                <div className="text-sm text-slate-400 uppercase tracking-tighter font-semibold">
+                  Prediction
+                </div>
+                <div
+                  className={`text-xl font-bold ${
+                    selectedTx.prediction?.is_fraud
+                      ? "text-red-400"
+                      : "text-green-400"
+                  }`}
+                >
+                  {selectedTx.prediction?.is_fraud === 1 ? "⚠️ FRAUDULENT" : "✅ LEGITIMATE"}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-slate-400 font-mono">Probability Score</div>
+                <div className="text-2xl font-mono text-white">
+                  {((selectedTx.prediction?.fraud_probability || 0) * 100).toFixed(4)}%
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="text-slate-300 font-bold mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
+                  <span>📥</span> Raw Transaction Data
+                </h4>
+                <div className="bg-[#0f172a] rounded-lg p-4 font-mono text-[11px] h-[300px] overflow-y-auto">
+                  <pre className="text-blue-200">
+                    {JSON.stringify(selectedTx.raw, null, 2)}
+                  </pre>
+                </div>
+                <p className="mt-2 text-[10px] text-slate-500 italic">
+                  Note: This is the raw JSON returned by the generator.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-slate-300 font-bold mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
+                  <span>⚙️</span> Engineered Model Features
+                </h4>
+                <div className="bg-[#0d1b2a] rounded-lg p-4 font-mono text-[11px] h-[300px] overflow-y-auto">
+                  <div className="space-y-2">
+                    {Object.entries(selectedTx.prediction?.engineered_features || {}).map(([key, value]) => (
+                      <div key={key} className="flex justify-between border-b border-slate-800/50 pb-1">
+                        <span className="text-yellow-500/80">{key}</span>
+                        <span className="text-white">{typeof value === 'number' ? value.toFixed(4) : value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="mt-2 text-[10px] text-slate-500 italic">
+                  Note: Features after datetime extraction, haversine distance, and log transformation.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg">
+                <h5 className="text-yellow-400 text-sm font-bold mb-1 flex items-center gap-2">
+                    <span>💡</span> Analysis Insight
+                </h5>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                    The LightGBM model evaluated this transaction. 
+                    {selectedTx.prediction?.fraud_probability && selectedTx.prediction.fraud_probability > 0.8 ? (
+                        " The extremely high probability score suggests multiple severe anomalies in purchase location and transaction amount."
+                    ) : selectedTx.prediction?.is_fraud ? (
+                        " While the indicators were mixed, the mathematical combination of variables surpassed the risk threshold."
+                    ) : (
+                        " The behavior pattern is consistent with historical legitimate user habits in this geographical region."
+                    )}
+                </p>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* ── Architecture Diagram ── */}
       <div className="mt-8 mb-4">
