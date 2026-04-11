@@ -6,11 +6,11 @@
 - [ ] Test feature engineering logic
 
 ## 2. Notebook — re-run before submission
-- [ ] Run all cells top-to-bottom in a clean kernel before April 14
-- [ ] Confirm all outputs/charts render correctly with current data
+- [Done ] Run all cells top-to-bottom in a clean kernel before April 14
+- [ Done] Confirm all outputs/charts render correctly with current data
 
 ## 3. Threshold optimisation (optional but adds points)
-- [ ] Lower classification threshold from 0.5 → try 0.3–0.4 to boost Recall
+- [ Done ] Lower classification threshold from 0.5 → try 0.3–0.4 to boost Recall
 - [ ] Show Precision/Recall tradeoff at different thresholds
 
 ## 4. API security (minor, low priority for academic context)
