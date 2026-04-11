@@ -60,6 +60,53 @@ The original Section 5 header was a model table. Fully rewritten with four sub-s
 - **5.3** — Implementation details: why Logistic Regression uses GridSearchCV vs Randomized, why XGBoost skips SMOTE in favour of `scale_pos_weight`, what `cv=5` and `n_jobs=-1` mean
 - **5.4 (new)** — "Model Training" header added before the first model code cell. Includes a detailed description of **Logistic Regression**: what it is, how the sigmoid formula works, why it is used as a baseline, its limitations for fraud detection (cannot capture non-linear feature combinations), and each hyperparameter tuned (`C`, `solver`, `class_weight`) explained
 
+### Section 5 — Per-model interpretation cells added
+Between every model training code cell, two cells were inserted:
+1. **Interpretation markdown** — explains what the printed metrics mean for *that specific model*, what its strengths and weaknesses are for fraud detection, and what to look for in the output
+2. **Bridge markdown** — transitions to the next model with a brief motivation for why the next model was chosen and how it differs from the previous one
+
+A **5.5 bridge** cell was added after LightGBM transitioning into Section 6.
+
+---
+
+### Section 6 — Enhanced intro (6.1 / 6.2 / 6.3)
+The original Section 6 header was expanded into three sub-sections:
+- **6.1** — Why evaluation matters: explains that a model that predicts "always legitimate" achieves 99.48% accuracy, so accuracy alone is meaningless
+- **6.2** — Metrics reference table: Precision, Recall, F1-Score, ROC-AUC each explained with a formula, plain-English meaning, and fraud scenario example
+- **6.3** — Reading the results: instructions on what to look for when comparing models in the table that follows
+
+### Section 6 — Winner announcement cell added (after comparison table)
+A new Python cell was inserted after the metrics comparison table. It:
+- Rebuilds `results_df` if the preceding cell was skipped (safety guard)
+- Prints the best model name, Recall score, fraud cases caught/missed out of total
+- Prints the gain in Recall over the Logistic Regression baseline
+- Prints the worst model and how many fraud cases it missed in comparison
+
+### Section 6 — Bar chart takeaway added
+A **📌 Bar Chart Takeaway** cell was inserted after the grouped bar chart. Explains: focus on the red Recall bars, why Accuracy barely moves across models, and what the gap between best and worst Recall means in practice.
+
+### Section 6 — ROC curve takeaway added (after ROC curve)
+A **📌 ROC Curve Takeaway** cell was inserted directly after the ROC curve plot. Explains the top-left corner target, what AUC measures, and why ROC-AUC is misleading on imbalanced data — bridging to the Precision–Recall curve below.
+
+### Section 6 — Precision–Recall curve added + takeaway
+A new Python cell plotting **Precision–Recall curves** for all models was inserted after the ROC curve. Uses `precision_recall_curve` and `average_precision_score`, includes a random baseline at the fraud prevalence rate (~0.52%). A **📌 Precision–Recall Takeaway** was added directly after, explaining why this curve is more honest on imbalanced data and how to read the Average Precision score.
+
+### Section 6 — Confusion matrix takeaway added (after confusion matrices)
+A **📌 Confusion Matrix Takeaway** cell was inserted directly after the confusion matrix heatmaps. Explains what each quadrant means, why False Negatives (missed fraud) are the most costly error type, and how to compare the two matrices.
+
+### Section 6 — Business impact table added + takeaway
+A new Python cell was inserted after the confusion matrices. It:
+- Calculates average fraud transaction value from the dataset
+- For each model: prints fraud caught, missed, estimated dollar loss, and false alarms
+- Prints the delta between best and worst model in cases caught and estimated dollars prevented
+
+A **📌 Business Impact Takeaway** was added after this cell, connecting Recall percentages to real financial stakes.
+
+### Section 6.4 — Threshold Optimisation added
+Two new cells were added:
+1. **Markdown (6.4 intro)** — explains what a classification threshold is using a smoke alarm analogy; explains the trade-off between Recall (catching fraud) and Precision (avoiding false alarms) at different threshold settings
+2. **Python cell** — tests the best model at thresholds 0.1–0.7, prints a table of Precision/Recall/F1/Fraud caught/False alarms, plots a line chart of all three metrics vs threshold, and prints the threshold that maximises F1
+
 ---
 
 *April 11, 2026*
