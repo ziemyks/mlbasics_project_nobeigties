@@ -1,27 +1,28 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Credit Card Fraud Detection — ML Project | RSU</title>
+  <title>Credit Card Fraud Detection - ML Project | RSU</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <style>
     /* ── RSU Dark Palette ──────────────────────────────────────────────── */
     :root {
       --bg:          #10080e;
-      --bg-card:     rgba(30, 14, 24, 0.7);
-      --bg-chart:    rgba(30, 14, 24, 0.5);
-      --border:      rgba(94, 0, 45, 0.18);
-      --border-hover: rgba(255, 75, 80, 0.35);
+      --bg-card:     rgba(52, 20, 38, 0.95);
+      --bg-card-deep: rgba(16, 6, 12, 0.6);
+      --bg-chart:    rgba(38, 14, 28, 0.85);
+      --border:      rgba(160, 40, 85, 0.38);
+      --border-hover: rgba(255, 75, 80, 0.55);
       --burgundy:    #5e002d;
       --burgundy-lt: #8a1538;
       --coral:       #ff4b50;
       --coral-soft:  #ff6b6f;
       --rose:        #e8a0b0;
-      --cream:       #f5f0f2;
-      --text:        #d4c8cf;
-      --muted:       #8a7a82;
-      --muted-dark:  #5a4a52;
+      --cream:       #faf6f8;
+      --text:        #e8dde2;
+      --muted:       #b8a8b0;
+      --muted-dark:  #8a7a82;
       --green:       #22c55e;
       --green-soft:  rgba(34, 197, 94, 0.7);
       --teal:        #2dd4bf;
@@ -96,11 +97,43 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 16px; padding: 28px;
-      transition: transform 0.3s, border-color 0.3s;
+      transition: transform 0.25s ease, border-color 0.25s ease,
+                  box-shadow 0.25s ease, background 0.25s ease;
     }
     .card:hover {
-      transform: translateY(-3px);
-      border-color: var(--border-hover);
+      transform: translateY(-6px);
+      border-color: rgba(180, 170, 175, 0.6);
+      background: rgba(90, 80, 85, 0.92);
+      box-shadow: 0 12px 40px rgba(180, 170, 175, 0.18),
+                  0 0 0 1px rgba(180, 170, 175, 0.12);
+    }
+
+    /* ── Error type boxes inside Two Types card ─────────────────────────── */
+    .error-box {
+      padding: 22px; border-radius: 14px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease,
+                  border-color 0.25s ease, background 0.25s ease;
+      cursor: default;
+    }
+    .error-box-fp {
+      background: linear-gradient(135deg, rgba(255,75,80,0.14), rgba(255,75,80,0.05));
+      border: 1px solid rgba(255,75,80,0.35);
+    }
+    .error-box-fp:hover {
+      transform: translateY(-4px);
+      background: linear-gradient(135deg, rgba(255,75,80,0.38), rgba(255,75,80,0.18));
+      border-color: rgba(255,75,80,0.8);
+      box-shadow: 0 8px 28px rgba(255,75,80,0.3);
+    }
+    .error-box-fn {
+      background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.06));
+      border: 1px solid rgba(239,68,68,0.45);
+    }
+    .error-box-fn:hover {
+      transform: translateY(-4px);
+      background: linear-gradient(135deg, rgba(239,68,68,0.42), rgba(239,68,68,0.2));
+      border-color: rgba(239,68,68,0.9);
+      box-shadow: 0 8px 28px rgba(239,68,68,0.32);
     }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -117,14 +150,24 @@
       flex: 1; min-width: 150px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px; padding: 24px; text-align: center;
+      border-radius: 16px; padding: 28px 20px; text-align: center;
+      transition: transform 0.25s ease, border-color 0.25s ease,
+                  box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .stat-box:hover {
+      transform: translateY(-6px);
+      border-color: rgba(180, 170, 175, 0.6);
+      background: rgba(90, 80, 85, 0.92);
+      box-shadow: 0 12px 40px rgba(180, 170, 175, 0.18),
+                  0 0 0 1px rgba(180, 170, 175, 0.12);
     }
     .stat-box .number {
-      font-size: 2.4rem; font-weight: 800;
-      font-family: 'Courier New', monospace;
+      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800;
+      font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1;
     }
     .stat-box .desc {
-      font-size: 13px; color: var(--muted); margin-top: 6px;
+      font-size: 13px; color: var(--muted); margin-top: 10px;
+      font-weight: 500;
     }
 
     /* ── Hero specific ─────────────────────────────────────────────────── */
@@ -184,16 +227,45 @@
 
     /* ── Chart containers ──────────────────────────────────────────────── */
     .chart-wrap {
-      background: var(--bg-chart);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px; padding: 24px;
+      border-radius: 16px; padding: 24px;
       margin: 20px 0;
+      transition: transform 0.25s ease, border-color 0.25s ease,
+                  box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .chart-wrap:hover {
+      transform: translateY(-6px);
+      border-color: rgba(180, 170, 175, 0.6);
+      background: rgba(90, 80, 85, 0.92);
+      box-shadow: 0 12px 40px rgba(180, 170, 175, 0.18),
+                  0 0 0 1px rgba(180, 170, 175, 0.12);
     }
     .chart-wrap canvas { max-height: 360px; }
 
     /* ── Table ─────────────────────────────────────────────────────────── */
     table th { color: var(--muted) !important; }
     table td { color: var(--text); }
+
+    /* ── Presentation-style classes ───────────────────────────────────── */
+    .slide-statement {
+      font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+      font-weight: 700; color: var(--cream);
+      line-height: 1.35; margin-bottom: 10px;
+    }
+    .key-callout {
+      padding: 20px 28px;
+      background: linear-gradient(135deg, rgba(94,0,45,0.3), rgba(255,75,80,0.1));
+      border: 1px solid rgba(255,75,80,0.3);
+      border-radius: 14px; margin: 28px 0;
+    }
+    .key-callout .kc-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--coral); margin-bottom: 8px;
+    }
+    .key-callout .kc-text {
+      font-size: 1.15rem; font-weight: 600; color: var(--cream);
+    }
 
     /* ── Fade-in on scroll ─────────────────────────────────────────────── */
     .reveal {
@@ -214,6 +286,7 @@
   <a href="#dataset">Dataset</a>
   <a href="#eda">EDA</a>
   <a href="#features">Features</a>
+  <a href="#dataprep">Data Split</a>
   <a href="#models">Models</a>
   <a href="#results">Results</a>
   <a href="#impact">Impact</a>
@@ -221,14 +294,14 @@
 </nav>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 1 — HERO                                                      -->
+<!--  SECTION 1 - HERO                                                      -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="hero">
   <div class="container">
     <div class="badge">RSU &middot; Basics of AI and Machine Learning &middot; April 2026</div>
     <h1>Credit Card Fraud Detection<br>with Machine Learning</h1>
     <p class="subtitle">
-      Building a complete ML pipeline — from 340,000 raw transactions
+      Building a complete ML pipeline - from 340,000 raw transactions
       to a trained model that catches fraud in real time.
     </p>
     <a href="#problem" class="hero-cta">
@@ -239,81 +312,103 @@
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 2 — THE PROBLEM                                               -->
+<!--  SECTION 2 - THE PROBLEM                                               -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="problem">
   <div class="container">
-    <div class="label reveal">The Challenge</div>
+    <div class="label reveal">The Problem</div>
     <h2 class="reveal">Why Fraud Detection Is Hard</h2>
     <div class="divider reveal"></div>
 
-    <div class="grid-2" style="margin-top: 24px;">
-      <div class="reveal">
-        <p style="font-size: 15px; margin-bottom: 20px;">
-          A new credit card company in the western US wants to protect its customers.
-          They hired us to build a model that flags suspicious transactions —
-          and the executive was clear:
+    <!-- Real-world hook -->
+    <p class="reveal" style="font-size: 16px; color: var(--rose); max-width: 820px; margin-bottom: 36px; line-height: 1.8;">
+      Card fraud costs the industry
+      <span class="highlight">billions of dollars every year</span>.
+      Detection systems are the last line of defence between criminals and customers —
+      and a single missed transaction can wipe out a customer's savings overnight.
+    </p>
+
+    <!-- Business context + accuracy trap -->
+    <div class="grid-2" style="margin-bottom: 36px;">
+      <div class="reveal" style="
+        border-left: 3px solid var(--burgundy-lt);
+        padding-left: 24px;
+        display: flex; flex-direction: column; justify-content: center; gap: 20px;
+      ">
+        <p style="font-size: 14px; color: var(--muted); margin: 0;">
+          New credit card company, western US. Main goal:
         </p>
-        <blockquote>
-          "The model should err on the side of caution — it is better to flag
-          a legitimate transaction than to miss real fraud."
+        <p class="slide-statement" style="margin: 0;">Catch as much fraud as possible - before the customer loses money.</p>
+        <blockquote style="margin: 0;">
+          "When in doubt - stop the transaction.<br>
+          A blocked card can be unblocked in minutes.<br>
+          <strong>Money stolen is gone.</strong>"
         </blockquote>
-        <p style="font-size: 15px; margin-top: 20px;">
-          This means our primary metric is <span class="highlight">Recall</span> —
-          out of all actual fraud cases, how many does the model catch?
-        </p>
       </div>
 
       <div class="card reveal">
         <h3>The Accuracy Trap</h3>
-        <p style="font-size: 14px; margin-bottom: 16px;">
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
           Only <span class="highlight">0.52%</span> of transactions are fraud.
-          A model that always says "not fraud" would be:
         </p>
-        <div style="text-align: center; margin: 20px 0;">
+        <div style="text-align: center; margin: 16px 0;">
           <div style="font-size: 3rem; font-weight: 800; color: var(--coral);">99.5%</div>
-          <div style="font-size: 13px; color: var(--muted);">
-            accurate — but catches <span class="highlight-red">ZERO</span> fraud
+          <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">
+            accurate - catches <span class="highlight-red">ZERO</span> fraud
           </div>
         </div>
-        <p style="font-size: 14px; color: var(--muted);">
-          That's why accuracy is useless here. We measure what actually matters:
-          <span class="highlight-blue">Recall</span>,
-          <span class="highlight-purple">F1-Score</span>, and
-          <span class="highlight-green">ROC-AUC</span>.
+        <p style="font-size: 13px; color: var(--muted);">
+          A model that always says "not fraud" scores 99.5% - and is completely useless.
+          Standard accuracy cannot be trusted here.
         </p>
       </div>
     </div>
 
-    <!-- Metric explanation cards -->
-    <div class="grid-3" style="margin-top: 32px;">
-      <div class="card reveal">
-        <h3 style="color: var(--coral);">Recall</h3>
-        <p style="font-size: 13px;">
-          Of all real fraud cases, what percentage did we catch?
-          Like a security guard — one who catches 90% of shoplifters has 90% recall.
-        </p>
+    <!-- Two types of errors -->
+    <div class="card reveal" style="margin-bottom: 36px;">
+      <h3 style="margin-bottom: 6px;">Two Types of Mistakes</h3>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">Not all errors are equal - one is far more costly</p>
+      <div class="grid-2" style="gap: 20px;">
+        <div class="error-box error-box-fp">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--coral); margin-bottom: 8px;">False Positive</div>
+          <div style="font-size: 22px; font-weight: 800; color: var(--cream); margin-bottom: 10px;">Legit &rarr; Flagged</div>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px;">
+            A real purchase is blocked. The customer calls the bank,
+            card is unblocked, customer moves on.
+          </p>
+          <div style="padding: 7px 14px; border-radius: 8px;
+            background: rgba(255,75,80,0.18); border: 1px solid rgba(255,75,80,0.3);
+            font-size: 13px; color: var(--coral); font-weight: 600;">
+            Cost: minor inconvenience
+          </div>
+        </div>
+        <div class="error-box error-box-fn">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #f87171; margin-bottom: 8px;">False Negative &nbsp;⚠</div>
+          <div style="font-size: 22px; font-weight: 800; color: var(--cream); margin-bottom: 10px;">Fraud &rarr; Missed</div>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px;">
+            Real fraud slips through. The customer loses money. The bank pays
+            chargebacks, loses trust, and faces regulatory scrutiny.
+          </p>
+          <div style="padding: 7px 14px; border-radius: 8px;
+            background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4);
+            font-size: 13px; color: #f87171; font-weight: 600;">
+            Cost: financial loss + reputation damage
+          </div>
+        </div>
       </div>
-      <div class="card reveal">
-        <h3 style="color: var(--rose);">F1-Score</h3>
-        <p style="font-size: 13px;">
-          Balances Recall and Precision into a single number.
-          The overall "grade" — avoids gaming one metric at the expense of the other.
-        </p>
-      </div>
-      <div class="card reveal">
-        <h3 style="color: var(--green);">ROC-AUC</h3>
-        <p style="font-size: 13px;">
-          How well the model ranks fraud higher than legitimate overall.
-          Score from 0.5 (random guessing) to 1.0 (perfect separation).
-        </p>
-      </div>
+      <p style="font-size: 13px; color: var(--muted-dark); margin-top: 16px; text-align: center;">
+        These two types of mistakes have very different costs - and that shapes every decision in the project.
+      </p>
     </div>
+
+    <p class="reveal" style="font-size: 13px; color: var(--muted-dark); margin-top: 8px; text-align: center;">
+      How we measure success &darr; see Results
+    </p>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 3 — DATASET                                                   -->
+<!--  SECTION 3 - DATASET                                                   -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="dataset">
   <div class="container">
@@ -321,16 +416,16 @@
     <h2 class="reveal">339,607 Real Transactions</h2>
     <div class="divider reveal"></div>
 
-    <p class="subtitle reveal" style="max-width: 800px;">
-      Credit card transactions from the western United States — each row includes
-      customer details, merchant info, location coordinates, transaction amount,
-      and whether it was fraud.
+    <p class="reveal" style="font-size: 16px; color: var(--rose); max-width: 820px; margin-bottom: 36px; line-height: 1.8;">
+      Credit card transactions from the western United States. Each row is one purchase -
+      customer details, merchant, category, location, amount, timestamp,
+      and whether it was <span class="highlight">fraud</span>.
     </p>
 
     <div class="stat-row reveal">
       <div class="stat-box">
         <div class="number" style="color: var(--coral);">339,607</div>
-        <div class="desc">Transactions</div>
+        <div class="desc">Total Transactions</div>
       </div>
       <div class="stat-box">
         <div class="number" style="color: var(--rose);">15</div>
@@ -338,25 +433,49 @@
       </div>
       <div class="stat-box">
         <div class="number" style="color: var(--coral-soft);">1,761</div>
-        <div class="desc">Fraud Cases (0.52%)</div>
+        <div class="desc">Fraud Cases</div>
       </div>
       <div class="stat-box">
-        <div class="number" style="color: var(--green);">0</div>
-        <div class="desc">Missing Values</div>
+        <div class="number" style="color: var(--coral);">0.52%</div>
+        <div class="desc">Fraud Rate</div>
       </div>
     </div>
 
-    <div class="chart-wrap reveal">
-      <canvas id="chartClassBalance"></canvas>
+    <div class="grid-2" style="margin-top: 8px;">
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">Volume - Legitimate vs Fraud</h3>
+        <canvas id="chartClassBar"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px; text-align: center;">
+          337,846 legitimate transactions vs 1,761 fraud
+        </p>
+      </div>
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">Share of Dataset (%)</h3>
+        <canvas id="chartClassPie"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px; text-align: center;">
+          99.48% legitimate &nbsp;|&nbsp; <span class="highlight">0.52% fraud</span>
+        </p>
+      </div>
     </div>
-    <p style="font-size: 13px; color: var(--muted-dark); text-align: center; margin-top: 8px;" class="reveal">
-      The extreme class imbalance — 337,846 legitimate vs 1,761 fraud — is the central challenge of this project.
-    </p>
+
+    <div class="reveal" style="
+      border-left: 3px solid var(--burgundy-lt);
+      padding-left: 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      margin-top: 28px;
+    ">
+      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Core Challenge</p>
+      <p class="slide-statement" style="margin: 0;">Only 1 in 193 transactions is fraud.</p>
+      <blockquote style="margin: 0;">
+        A model that ignores all fraud still scores <strong>99.5% accuracy</strong> -<br>
+        which is why <strong>accuracy alone cannot be trusted.</strong>
+      </blockquote>
+    </div>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 4 — EDA                                                       -->
+<!--  SECTION 4 - EDA                                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="eda" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
@@ -364,10 +483,18 @@
     <h2 class="reveal">What Does Fraud Look Like?</h2>
     <div class="divider reveal"></div>
 
-    <p class="subtitle reveal" style="max-width: 800px;">
-      Before training any model, we explored the data to find patterns. These discoveries
-      directly guided which features we engineered and which models we chose.
-    </p>
+    <div class="reveal" style="
+      border-left: 3px solid var(--burgundy-lt);
+      padding-left: 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      margin-bottom: 8px;
+    ">
+      <p class="slide-statement" style="margin: 0;">Fraud has a fingerprint.</p>
+      <blockquote style="margin: 0;">
+        Night hours, large amounts, distant merchants -<br>
+        <strong>we found it before training a single model.</strong>
+      </blockquote>
+    </div>
 
     <div class="grid-2" style="margin-top: 24px;">
       <!-- Fraud by hour -->
@@ -375,7 +502,7 @@
         <h3 style="margin-bottom: 16px;">Fraud Rate by Hour of Day</h3>
         <canvas id="chartFraudByHour"></canvas>
         <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px;">
-          Fraud peaks between <span class="highlight">1–4 AM</span> — criminals act while victims sleep.
+          Fraud peaks between <span class="highlight">1–4 AM</span> - criminals act while victims sleep.
         </p>
       </div>
 
@@ -384,7 +511,7 @@
         <h3 style="margin-bottom: 16px;">Top Fraud Categories</h3>
         <canvas id="chartFraudByCategory"></canvas>
         <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px;">
-          Online categories (<span class="highlight">shopping_net</span>, <span class="highlight">misc_net</span>) have elevated fraud rates — no physical card check.
+          Online categories (<span class="highlight">Online Shopping</span>, <span class="highlight">Online Misc.</span>) have elevated fraud rates - no physical card required.
         </p>
       </div>
     </div>
@@ -393,32 +520,22 @@
     <div class="grid-3" style="margin-top: 32px;">
       <div class="card reveal">
         <h3>Transaction Amount</h3>
-        <p style="font-size: 13px;">
-          Fraud transactions have a <span class="highlight">significantly higher median amount</span>
-          than legitimate ones. Criminals go big.
-        </p>
+        <p style="font-size: 13px; color: var(--muted);">Fraud transactions have a <span class="highlight">higher median amount</span></p>
       </div>
       <div class="card reveal">
         <h3>Geographic Distance</h3>
-        <p style="font-size: 13px;">
-          Fraudulent merchants are <span class="highlight">much further</span> from the cardholder's
-          location — distance became one of our top features.
-        </p>
+        <p style="font-size: 13px; color: var(--muted);">Fraudulent merchants are <span class="highlight">much further</span> from the cardholder</p>
       </div>
       <div class="card reveal">
-        <h3>Correlations</h3>
-        <p style="font-size: 13px;">
-          The correlation heatmap confirmed that <span class="highlight">amount</span> and
-          <span class="highlight">category</span> are the strongest individual signals,
-          but the real power comes from combining them.
-        </p>
+        <h3>Key Signals</h3>
+        <p style="font-size: 13px; color: var(--muted);"><span class="highlight">Amount</span> + <span class="highlight">category</span> + <span class="highlight">distance</span> - strongest individual predictors</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 5 — FEATURE ENGINEERING                                       -->
+<!--  SECTION 5 - FEATURE ENGINEERING                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="features" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
@@ -426,86 +543,243 @@
     <h2 class="reveal">Turning Raw Data Into Fraud Signals</h2>
     <div class="divider reveal"></div>
 
-    <p class="subtitle reveal" style="max-width: 800px;">
-      The raw dataset had timestamps and coordinates — but models can't learn from a datetime string.
-      We created <span class="highlight">6 new features</span> that encode domain knowledge about how fraud works.
-    </p>
+    <div class="reveal" style="
+      border-left: 3px solid var(--burgundy-lt);
+      padding-left: 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      margin-bottom: 32px;
+    ">
+      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Idea</p>
+      <p class="slide-statement" style="margin: 0;">The raw data doesn't speak fraud. We taught it how.</p>
+      <blockquote style="margin: 0;">
+        A timestamp is just a number. But <strong>3 AM on a Wednesday</strong> tells a very different story.
+      </blockquote>
+    </div>
 
-    <div class="grid-2" style="margin-top: 24px;">
-      <!-- Feature cards -->
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128337;</div>
-          <div>
-            <h3>hour / day_of_week / month</h3>
-            <p style="font-size: 13px;">
-              Extracted from timestamp. Captures the <span class="highlight">1–4 AM fraud peak</span>
-              and weekly/seasonal patterns discovered in EDA.
-            </p>
-          </div>
+    <!-- 4 feature cards with raw → engineered transformations -->
+    <div class="grid-2" style="margin-bottom: 20px;">
+
+      <div class="card reveal">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">&#128337;</span>
+          <h3 style="margin: 0;">Time of Day</h3>
         </div>
-        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128100;</div>
-          <div>
-            <h3>age</h3>
-            <p style="font-size: 13px;">
-              Transaction date minus date of birth. Certain age groups are
-              <span class="highlight">targeted more frequently</span> by fraudsters.
-            </p>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          A raw timestamp is meaningless to a model. We extracted <strong>hour</strong>, <strong>day of week</strong>, and <strong>month</strong> — so the model can learn that 3 AM is suspicious and noon is not.
+        </p>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 12px; color: var(--muted-dark); font-family: monospace; font-size: 12px;">
+            2019-01-01 03:24:00
           </div>
-        </div>
-        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128205;</div>
-          <div>
-            <h3>distance_km</h3>
-            <p style="font-size: 13px;">
-              <span class="highlight">Haversine formula</span>: straight-line distance between cardholder and
-              merchant coordinates. A $4,000 purchase 8,000 km away screams fraud.
-            </p>
-          </div>
-        </div>
-        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
-          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128200;</div>
-          <div>
-            <h3>log_amt</h3>
-            <p style="font-size: 13px;">
-              <code style="color: var(--coral);">ln(1 + amount)</code> — compresses the extreme range ($1–$28,000+)
-              and reduces outlier influence. Standard technique for skewed financial data.
-            </p>
+          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+          <div style="background: rgba(255,75,80,0.12); border: 1px solid rgba(255,75,80,0.3); border-radius: 8px; padding: 8px 12px; color: var(--coral); font-family: monospace; font-size: 12px; font-weight: 600;">
+            hour = 3 &nbsp;&#9888;
           </div>
         </div>
       </div>
 
-      <!-- Also done -->
-      <div>
-        <div class="card reveal" style="margin-bottom: 16px;">
-          <h3>Also Applied</h3>
-          <ul class="clean" style="margin-top: 12px;">
-            <li><strong>One-Hot Encoding</strong> — converted <code style="color: var(--coral);">category</code> (14 values)
-                and <code style="color: var(--coral);">state</code> (13 values) into binary columns</li>
-            <li><strong>StandardScaler</strong> — rescaled numeric features to mean=0, std=1
-                (fitted on training data only to prevent leakage)</li>
-            <li><strong>Dropped</strong> — merchant name, city, job, transaction ID
-                (non-predictive or high-cardinality)</li>
-          </ul>
+      <div class="card reveal">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">&#128205;</span>
+          <h3 style="margin: 0;">Distance to Merchant</h3>
         </div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          The dataset has the cardholder's home coordinates and the merchant's location. We calculated the straight-line distance between them. A purchase <strong>4,000 km from home</strong> is a major red flag.
+          This became our <span class="highlight">top predictor.</span>
+        </p>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 12px; color: var(--muted-dark); font-family: monospace; font-size: 12px;">
+            lat/lon &times; 2 pairs
+          </div>
+          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+          <div style="background: rgba(255,75,80,0.12); border: 1px solid rgba(255,75,80,0.3); border-radius: 8px; padding: 8px 12px; color: var(--coral); font-family: monospace; font-size: 12px; font-weight: 600;">
+            distance = 4,823 km &nbsp;&#9888;
+          </div>
+        </div>
+      </div>
 
-        <div class="card reveal" style="border-color: rgba(255, 75, 80, 0.25);">
-          <h3 style="color: var(--coral);">Result</h3>
-          <p style="font-size: 14px; margin-top: 8px;">
-            <span class="highlight">15 raw columns</span> became
-            <span class="highlight">39 engineered features</span> —
-            and the features we created ranked among the model's
-            <strong>top predictors</strong> in Section 7.
-          </p>
+      <div class="card reveal">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">&#128100;</span>
+          <h3 style="margin: 0;">Customer Age</h3>
         </div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          A date of birth means nothing on its own. We calculated each cardholder's age at the time of the transaction. Fraud rates differ significantly across age groups — older cardholders are targeted more often.
+        </p>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 12px; color: var(--muted-dark); font-family: monospace; font-size: 12px;">
+            dob: 1968-03-14
+          </div>
+          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+          <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 8px 12px; color: var(--green); font-family: monospace; font-size: 12px; font-weight: 600;">
+            age = 51
+          </div>
+        </div>
+      </div>
+
+      <div class="card reveal">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 24px;">&#128200;</span>
+          <h3 style="margin: 0;">Amount — Compressed Scale</h3>
+        </div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          Transaction amounts range from $1 to over $28,000. That extreme range confuses some models — a $28,000 purchase would dominate all other signals. Taking the <strong>logarithm</strong> brings everything into a manageable range without losing the pattern.
+        </p>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 12px; color: var(--muted-dark); font-family: monospace; font-size: 12px;">
+            amount: $28,476
+          </div>
+          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+          <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 8px 12px; color: var(--green); font-family: monospace; font-size: 12px; font-weight: 600;">
+            log_amt = 10.25
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- One-hot + result -->
+    <div class="grid-2">
+      <div class="card reveal">
+        <h3>Categories &#8594; Yes / No Columns</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 10px 0 12px;">
+          A model cannot read the word <em>"Online Shopping"</em>. So we created one column per category — each asking a yes/no question the model can actually process.
+        </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+          <span style="background: rgba(255,75,80,0.1); border: 1px solid rgba(255,75,80,0.25); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--coral);">is_online_shopping?</span>
+          <span style="background: rgba(255,75,80,0.1); border: 1px solid rgba(255,75,80,0.25); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--coral);">is_food_dining?</span>
+          <span style="background: rgba(255,75,80,0.1); border: 1px solid rgba(255,75,80,0.25); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--coral);">is_entertainment?</span>
+          <span style="font-size: 12px; color: var(--muted-dark); align-self: center;">+ 11 more</span>
+        </div>
+        <p style="font-size: 12px; color: var(--muted-dark);">
+          Same applied to 13 US states. This technique is called <strong>one-hot encoding</strong>.
+        </p>
+      </div>
+
+      <div class="card reveal" style="border-color: rgba(255,75,80,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px;">
+        <div style="font-size: 14px; color: var(--muted);">The outcome</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div>
+            <div style="font-size: 2.6rem; font-weight: 800; color: var(--muted);">15</div>
+            <div style="font-size: 12px; color: var(--muted-dark); margin-top: 4px;">raw columns</div>
+          </div>
+          <div style="font-size: 2rem; color: var(--coral); font-weight: 700;">&#8594;</div>
+          <div>
+            <div style="font-size: 2.6rem; font-weight: 800; color: var(--coral);">39</div>
+            <div style="font-size: 12px; color: var(--muted-dark); margin-top: 4px;">engineered features</div>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: var(--muted);">
+          4 of our hand-crafted features ranked among the model's <span class="highlight">top predictors</span>
+        </p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 6 — MODELS                                                    -->
+<!--  SECTION 6 - DATA PREPARATION                                          -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="dataprep" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Data Preparation</div>
+    <h2 class="reveal">Splitting the Data — Before Any Model Sees It</h2>
+    <div class="divider reveal"></div>
+
+    <div class="reveal" style="
+      border-left: 3px solid var(--burgundy-lt);
+      padding-left: 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      margin-bottom: 32px;
+    ">
+      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Rule</p>
+      <p class="slide-statement" style="margin: 0;">You can't test a student on questions they've already seen the answers to.</p>
+      <blockquote style="margin: 0;">
+        We locked away 20% of the data before any training happened —
+        <strong>the model never saw it until the final exam.</strong>
+      </blockquote>
+    </div>
+
+    <!-- Train / Test split visual -->
+    <div class="card reveal" style="margin-bottom: 20px;">
+      <h3 style="margin-bottom: 16px;">The 80 / 20 Split</h3>
+      <div style="display: flex; border-radius: 10px; overflow: hidden; height: 48px; margin-bottom: 16px;">
+        <div style="flex: 80; background: linear-gradient(90deg, rgba(94,0,45,0.7), rgba(255,75,80,0.45));
+          display: flex; align-items: center; justify-content: center;
+          font-size: 14px; font-weight: 700; color: var(--cream);">
+          80% — Training Data &nbsp;<span style="font-size: 12px; color: var(--rose);">(271,685 transactions)</span>
+        </div>
+        <div style="flex: 20; background: rgba(34,197,94,0.25); border-left: 2px solid var(--green);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 14px; font-weight: 700; color: var(--green);">
+          20% — Test
+        </div>
+      </div>
+      <div class="grid-2" style="gap: 16px;">
+        <div style="padding: 14px 18px; background: rgba(255,75,80,0.07); border-radius: 10px; border: 1px solid rgba(255,75,80,0.2);">
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--coral); margin-bottom: 6px;">Training set</div>
+          <p style="font-size: 13px; color: var(--muted);">What the model <strong>learns from</strong>. It sees these transactions during training and adjusts itself to detect patterns.</p>
+        </div>
+        <div style="padding: 14px 18px; background: rgba(34,197,94,0.07); border-radius: 10px; border: 1px solid rgba(34,197,94,0.2);">
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 6px;">Test set — locked away</div>
+          <p style="font-size: 13px; color: var(--muted);">The <strong>real exam</strong>. The model never sees these during training. All final results — Recall, F1, AUC — are measured here.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMOTE + Scaling side by side -->
+    <div class="grid-2">
+
+      <div class="card reveal">
+        <h3>Fixing the Imbalance — SMOTE</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 10px 0 16px;">
+          Remember — only 0.52% of the training data is fraud. If the model trains on this as-is, it learns that saying "not fraud" is almost always correct. It never properly learns what fraud looks like.
+        </p>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          <strong>SMOTE</strong> (Synthetic Minority Over-sampling Technique) generates <em>new synthetic fraud examples</em> by blending existing ones — until the training set is 50/50. The model now sees equal amounts of both.
+        </p>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="text-align: center; padding: 10px 16px; background: rgba(255,75,80,0.08); border-radius: 8px; border: 1px solid rgba(255,75,80,0.2);">
+            <div style="font-size: 18px; font-weight: 800; color: var(--muted);">0.52%</div>
+            <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">fraud before SMOTE</div>
+          </div>
+          <span style="color: var(--coral); font-weight: 700; font-size: 1.2rem;">&#8594;</span>
+          <div style="text-align: center; padding: 10px 16px; background: rgba(34,197,94,0.08); border-radius: 8px; border: 1px solid rgba(34,197,94,0.2);">
+            <div style="font-size: 18px; font-weight: 800; color: var(--green);">50%</div>
+            <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">fraud after SMOTE</div>
+          </div>
+        </div>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 14px;">
+          &#9888; SMOTE is applied <strong>only to the training set</strong>. The test set stays untouched — it must reflect real-world proportions.
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <h3>Putting Features on Equal Footing</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 10px 0 16px;">
+          Some of our features have very different scales. Transaction amount ranges from $1 to $28,000. Age ranges from 18 to 90. If we feed both into a model as-is, the large-scale feature can <strong>drown out the smaller ones</strong> — not because it's more important, but purely because its numbers are bigger.
+        </p>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          <strong>StandardScaler</strong> rescales all numeric features to have the same centre (mean = 0) and spread (std = 1). Every feature now competes on equal terms.
+        </p>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <div style="padding: 8px 14px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 12px; color: var(--muted-dark); font-family: monospace;">
+            amount: $0 – $28,476
+          </div>
+          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+          <div style="padding: 8px 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; font-size: 12px; color: var(--green); font-family: monospace;">
+            scaled: -1.2 to 3.4
+          </div>
+        </div>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 14px;">
+          &#9888; The scaler is fitted <strong>on training data only</strong> — then applied to both sets. Fitting on all data would let test information leak into training, making results look better than they really are.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 7 - MODELS                                                    -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="models" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
@@ -513,78 +787,62 @@
     <h2 class="reveal">5 Algorithms, From Simple to Powerful</h2>
     <div class="divider reveal"></div>
 
-    <p class="subtitle reveal" style="max-width: 800px;">
-      We trained 5 models of increasing complexity. All were tuned using
-      <span class="highlight">5-fold cross-validation</span> with F1-Score as the optimisation metric.
-      SMOTE was applied to the training set to balance classes at 50/50.
-    </p>
+    <div class="key-callout reveal">
+      <div class="kc-label">Approach</div>
+      <div class="kc-text">Start with a simple baseline - then add complexity step by step. Each model builds on the shortcomings of the last.</div>
+    </div>
 
     <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
       <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
         <div style="font-size: 24px; text-align: center; color: var(--muted);">1</div>
         <div>
           <h3>Logistic Regression</h3>
-          <p style="font-size: 13px; color: var(--muted);">
-            Linear boundary + sigmoid probability. Fast, interpretable — our <strong>baseline</strong>.
-            Cannot capture feature interactions.
-          </p>
+          <p style="font-size: 13px; color: var(--muted);">Linear boundary - fast, interpretable. <strong>Baseline.</strong></p>
         </div>
-        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV &middot; C, solver</div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV</div>
       </div>
 
       <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
         <div style="font-size: 24px; text-align: center; color: var(--muted);">2</div>
         <div>
           <h3>Decision Tree</h3>
-          <p style="font-size: 13px; color: var(--muted);">
-            Learns yes/no questions: "Amount > $500? Hour > 22?" Non-linear, but a single tree
-            <strong>overfits</strong> easily.
-          </p>
+          <p style="font-size: 13px; color: var(--muted);">Yes/no questions. Non-linear, but overfits.</p>
         </div>
-        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV &middot; max_depth, criterion</div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV</div>
       </div>
 
       <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
         <div style="font-size: 24px; text-align: center; color: var(--muted);">3</div>
         <div>
           <h3>Random Forest</h3>
-          <p style="font-size: 13px; color: var(--muted);">
-            Ensemble of many independent trees that <strong>vote together</strong>.
-            Crowd wisdom reduces overfitting. Trees don't learn from each other's mistakes.
-          </p>
+          <p style="font-size: 13px; color: var(--muted);">Hundreds of trees voting together. Reduces overfitting.</p>
         </div>
-        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; n_estimators, depth</div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV</div>
       </div>
 
       <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
         <div style="font-size: 24px; text-align: center; color: var(--coral-soft);">4</div>
         <div>
           <h3 style="color: var(--cream);">XGBoost</h3>
-          <p style="font-size: 13px; color: var(--muted);">
-            <strong>Gradient boosting</strong> — each new tree corrects the previous tree's errors.
-            Like editors, each fixing what the last one missed.
-          </p>
+          <p style="font-size: 13px; color: var(--muted);">Each tree corrects the last. <strong>Highest Recall: 0.8764</strong></p>
         </div>
-        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; lr, depth, subsample</div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV</div>
       </div>
 
       <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center; border-color: rgba(255, 75, 80, 0.25);">
         <div style="font-size: 24px; text-align: center; color: var(--coral);">5</div>
         <div>
-          <h3 style="color: var(--coral);">LightGBM</h3>
-          <p style="font-size: 13px; color: var(--muted);">
-            Microsoft's fast gradient boosting. Same idea as XGBoost but
-            <strong>faster and more memory-efficient</strong> on large datasets. Our deployed model.
-          </p>
+          <h3 style="color: var(--coral);">LightGBM ★</h3>
+          <p style="font-size: 13px; color: var(--muted);">Faster gradient boosting. <strong>Our deployed model.</strong></p>
         </div>
-        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; leaves, lr, depth</div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 7 — RESULTS                                                   -->
+<!--  SECTION 7 - RESULTS                                                   -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="results" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
@@ -592,10 +850,41 @@
     <h2 class="reveal">Model Performance on Unseen Data</h2>
     <div class="divider reveal"></div>
 
-    <p class="subtitle reveal" style="max-width: 800px;">
-      All metrics below are from the <span class="highlight">held-out test set</span> — 20% of data
-      the models never saw during training. This is the real exam.
-    </p>
+    <div class="key-callout reveal">
+      <div class="kc-label">The Real Exam</div>
+      <div class="kc-text">All numbers below come from the held-out test set - 20% of data the models <em>never saw</em> during training. This is what actually matters.</div>
+    </div>
+
+    <!-- Metric cards -->
+    <div class="grid-3" style="margin-bottom: 28px;">
+      <div class="card reveal">
+        <h3 style="color: var(--coral); margin-bottom: 8px;">Recall</h3>
+        <p style="font-size: 13px; color: var(--muted);">% of actual fraud cases caught</p>
+        <div style="margin-top: 14px; padding: 8px 12px; border-radius: 8px;
+          background: rgba(255,75,80,0.08); font-size: 12px;
+          font-family: 'Courier New', monospace; color: var(--coral);">
+          TP / (TP + FN)
+        </div>
+      </div>
+      <div class="card reveal">
+        <h3 style="color: var(--rose); margin-bottom: 8px;">F1-Score</h3>
+        <p style="font-size: 13px; color: var(--muted);">Balance between Recall and Precision</p>
+        <div style="margin-top: 14px; padding: 8px 12px; border-radius: 8px;
+          background: rgba(232,160,176,0.08); font-size: 12px;
+          font-family: 'Courier New', monospace; color: var(--rose);">
+          2 &times; (P &times; R) / (P + R)
+        </div>
+      </div>
+      <div class="card reveal">
+        <h3 style="color: var(--green); margin-bottom: 8px;">ROC-AUC</h3>
+        <p style="font-size: 13px; color: var(--muted);">Separation quality &nbsp;|&nbsp; 0.5 random → 1.0 perfect</p>
+        <div style="margin-top: 14px; padding: 8px 12px; border-radius: 8px;
+          background: rgba(34,197,94,0.08); font-size: 12px;
+          font-family: 'Courier New', monospace; color: var(--green);">
+          Our best: 0.9978
+        </div>
+      </div>
+    </div>
 
     <!-- Results table -->
     <div class="card reveal" style="overflow-x: auto; margin-top: 24px;">
@@ -658,7 +947,7 @@
     <!-- Charts side by side -->
     <div class="grid-2" style="margin-top: 32px;">
       <div class="chart-wrap reveal">
-        <h3 style="margin-bottom: 16px;">Recall Comparison — Fraud Cases Caught</h3>
+        <h3 style="margin-bottom: 16px;">Recall Comparison - Fraud Cases Caught</h3>
         <canvas id="chartRecall"></canvas>
       </div>
       <div class="chart-wrap reveal">
@@ -667,25 +956,26 @@
       </div>
     </div>
 
-    <div class="card reveal" style="margin-top: 24px; border-color: rgba(255, 75, 80, 0.2);">
-      <p style="font-size: 14px;">
-        <strong style="color: var(--coral);">Key takeaway:</strong>
-        Accuracy barely moves (98.9%–99.9%) across all models — confirming it's useless on imbalanced data.
-        The real story is in Recall and F1. <span class="highlight">Gradient boosting models (XGBoost, LightGBM)</span>
-        clearly dominate, catching up to <strong>87.6%</strong> of all fraud cases.
-      </p>
+    <div class="key-callout reveal" style="margin-top: 24px;">
+      <div class="kc-label">Verdict</div>
+      <div class="kc-text">Accuracy barely moves across all models. <span class="highlight">The real story is Recall and F1 - and gradient boosting wins by a wide margin, catching up to 87.6% of all fraud.</span></div>
     </div>
   </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 8 — BUSINESS IMPACT                                           -->
+<!--  SECTION 8 - BUSINESS IMPACT                                           -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="impact" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
     <div class="label reveal">Business Impact</div>
     <h2 class="reveal">What Model Choice Means in Dollars</h2>
     <div class="divider reveal"></div>
+
+    <div class="key-callout reveal">
+      <div class="kc-label">Bottom Line</div>
+      <div class="kc-text">Choosing the right model over the worst one prevents <span class="highlight">~$32,000 in fraud losses</span> on this test set alone. Scale to millions of transactions - and that gap becomes enormous.</div>
+    </div>
 
     <div class="stat-row reveal">
       <div class="stat-box">
@@ -708,7 +998,7 @@
 
     <!-- Impact chart -->
     <div class="chart-wrap reveal">
-      <h3 style="margin-bottom: 16px;">Fraud Cases Caught vs Missed — Per Model</h3>
+      <h3 style="margin-bottom: 16px;">Fraud Cases Caught vs Missed - Per Model</h3>
       <canvas id="chartImpact"></canvas>
     </div>
 
@@ -726,7 +1016,7 @@
         <p style="font-size: 14px;">
           XGBoost misses only <span class="highlight-green">44 cases</span> ($22,795 est. loss)
           with just <strong>47 false alarms</strong>. LightGBM trades 13 more missed cases for
-          <span class="highlight-green">only 24 false alarms</span> — the cleanest output.
+          <span class="highlight-green">only 24 false alarms</span> - the cleanest output.
         </p>
       </div>
     </div>
@@ -734,7 +1024,7 @@
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 9 — DEMO                                                      -->
+<!--  SECTION 9 - DEMO                                                      -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="demo">
   <div class="container" style="text-align: center;">
@@ -831,29 +1121,78 @@ const GREEN = 'rgba(34, 197, 94, 0.7)';
 const ROSE = 'rgba(232, 160, 176, 0.6)';
 const MUTED = 'rgba(138, 122, 130, 0.35)';
 
-// ── Chart: Class Balance (horizontal bar) ───────────────────────────────
-new Chart(document.getElementById('chartClassBalance'), {
-  type: 'bar',
-  data: {
-    labels: ['Legitimate', 'Fraud'],
-    datasets: [{
-      data: [337846, 1761],
-      backgroundColor: [GREEN, CORAL],
-      borderColor: ['#22c55e', '#ff4b50'],
-      borderWidth: 1, borderRadius: 6,
-    }]
-  },
-  options: {
-    indexAxis: 'y', responsive: true,
-    plugins: { legend: { display: false },
-      tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString() + ' transactions' } }
+// ── Chart: Class Bar (horizontal bar with gradient) ─────────────────────
+(function() {
+  const ctx = document.getElementById('chartClassBar').getContext('2d');
+  const gradLegit = ctx.createLinearGradient(0, 0, 400, 0);
+  gradLegit.addColorStop(0, 'rgba(34, 197, 94, 0.85)');
+  gradLegit.addColorStop(1, 'rgba(45, 212, 191, 0.55)');
+  const gradFraud = ctx.createLinearGradient(0, 0, 400, 0);
+  gradFraud.addColorStop(0, 'rgba(255, 75, 80, 0.9)');
+  gradFraud.addColorStop(1, 'rgba(239, 68, 68, 0.55)');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Legitimate', 'Fraud'],
+      datasets: [{
+        data: [337846, 1761],
+        backgroundColor: [gradLegit, gradFraud],
+        borderColor: ['#22c55e', '#ff4b50'],
+        borderWidth: 1, borderRadius: 8,
+      }]
     },
-    scales: {
-      x: { ticks: { callback: v => (v/1000)+'K' }, grid: { color: 'rgba(94,0,45,0.06)' } },
-      y: { grid: { display: false } }
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString() + ' transactions' } }
+      },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(184,168,176,0.8)', callback: v => (v/1000)+'K' },
+          grid: { color: 'rgba(94,0,45,0.12)' }
+        },
+        y: {
+          ticks: { color: 'rgba(184,168,176,0.9)', font: { weight: '600' } },
+          grid: { display: false }
+        }
+      }
     }
-  }
-});
+  });
+})();
+
+// ── Chart: Class Pie (doughnut with gradient-style colors) ───────────────
+(function() {
+  const ctx = document.getElementById('chartClassPie').getContext('2d');
+  const gradLegit = ctx.createLinearGradient(-150, -150, 150, 150);
+  gradLegit.addColorStop(0, 'rgba(34, 197, 94, 0.85)');
+  gradLegit.addColorStop(1, 'rgba(45, 212, 191, 0.65)');
+  const gradFraud = ctx.createLinearGradient(-150, -150, 150, 150);
+  gradFraud.addColorStop(0, 'rgba(255, 75, 80, 0.95)');
+  gradFraud.addColorStop(1, 'rgba(239, 68, 68, 0.7)');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Legitimate (99.48%)', 'Fraud (0.52%)'],
+      datasets: [{
+        data: [99.48, 0.52],
+        backgroundColor: [gradLegit, gradFraud],
+        borderColor: ['#22c55e', '#ff4b50'],
+        borderWidth: 2,
+        hoverOffset: 12,
+      }]
+    },
+    options: {
+      responsive: true, cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: 'rgba(184,168,176,0.9)', padding: 16, font: { size: 13 } }
+        },
+        tooltip: { callbacks: { label: ctx => ctx.label + ' of all transactions' } }
+      }
+    }
+  });
+})();
 
 // ── Chart: Fraud by Hour ────────────────────────────────────────────────
 const hourLabels = Array.from({length: 24}, (_, i) => i + ':00');
@@ -884,7 +1223,7 @@ new Chart(document.getElementById('chartFraudByHour'), {
 new Chart(document.getElementById('chartFraudByCategory'), {
   type: 'bar',
   data: {
-    labels: ['shopping_net', 'grocery_net', 'misc_net', 'shopping_pos', 'grocery_pos', 'food_dining', 'entertainment'],
+    labels: ['Online Shopping', 'Online Grocery', 'Online Misc.', 'In-Store Shopping', 'In-Store Grocery', 'Food & Dining', 'Entertainment'],
     datasets: [{
       label: 'Fraud Rate (%)',
       data: [1.42, 1.38, 1.18, 0.62, 0.55, 0.48, 0.42],
@@ -925,7 +1264,7 @@ new Chart(document.getElementById('chartRecall'), {
     responsive: true, indexAxis: 'y',
     plugins: {
       legend: { display: false },
-      tooltip: { callbacks: { label: ctx => 'Recall: ' + (ctx.raw * 100).toFixed(2) + '% — ' + Math.round(ctx.raw * 356) + '/356 fraud caught' } }
+      tooltip: { callbacks: { label: ctx => 'Recall: ' + (ctx.raw * 100).toFixed(2) + '% - ' + Math.round(ctx.raw * 356) + '/356 fraud caught' } }
     },
     scales: {
       x: { min: 0, max: 1, ticks: { callback: v => (v*100)+'%' }, grid: { color: 'rgba(94,0,45,0.06)' } },
@@ -1000,3 +1339,4 @@ new Chart(document.getElementById('chartImpact'), {
 
 </body>
 </html>
+
