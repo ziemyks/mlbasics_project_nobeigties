@@ -1,6 +1,33 @@
 # Jolanta Edits — Change Log
 
-Changes made to `ML_work_and_analysis.ipynb` and supporting files — **April 11, 2026**.
+---
+
+## April 12, 2026
+
+### Files Added
+- **`PRESENTATION_README.md`** — full presentation guide: 18-slide plan, beginner-friendly project explanation for teammates (plain-English glossary of 15 terms, step-by-step project walkthrough, FAQ for likely audience questions), live demo instructions for the coursemate running Docker, and a pre-presentation checklist
+
+### Project Validation
+- Ran a full validation against `project_guidelines.md` and `rules.md`
+- Confirmed covered: EDA, all required visualisations, SMOTE, feature engineering, 5 models with GridSearch/RandomizedSearch, all metrics, ROC/PR curves, confusion matrices, threshold optimisation, feature importance, references
+- Identified gaps: **Contribution Table** missing from notebook (required by guidelines, direct point loss), SHAP values not implemented (optional bonus)
+
+### Testing Notebooks Added
+- **`Phase_2_testing.ipynb`** — 9 tests (Tests 6–14) validating feature engineering math: haversine distance, log_amt, age calculation, hour/day/month extraction, one-hot encoding alignment, and StandardScaler application
+- **`Phase_3_testing.ipynb`** — 5 tests (Tests 15–19) validating model inference: valid class label output, predict_proba in [0,1], determinism across 5 repeated calls, directional sanity (fraud pattern scores higher than legit), and batch prediction of 5 mixed rows
+
+### Housekeeping
+- Deleted `__pycache__/` directory from project root
+
+---
+
+## April 11, 2026
+
+### Testing Notebooks Added
+- **`Phase_1_testing.ipynb`** — 5 tests (Tests 1–5) validating artefact loading: model_artefacts/ directory exists, all 4 files present (lgbm_fraud_model.pkl, scaler.pkl, feature_columns.pkl, num_features.pkl), model is a LightGBM classifier, feature_cols is a list of 50+ strings, num_features is a non-empty list
+
+### Other Changes
+Changes made to `ML_work_and_analysis.ipynb` and supporting files.
 
 ---
 
