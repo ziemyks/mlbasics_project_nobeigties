@@ -6,6 +6,9 @@
 
 ### Files Added
 - **`PRESENTATION_README.md`** — full presentation guide: 18-slide plan, beginner-friendly project explanation for teammates (plain-English glossary of 15 terms, step-by-step project walkthrough, FAQ for likely audience questions), live demo instructions for the coursemate running Docker, and a pre-presentation checklist
+  - Manually edited after creation: section header renamed from `For Teammates — What We Did (Plain English)` → `What We Did`
+- **`Presentation/presentation_speech.md`** — full speaker script for the 18-slide deck with `[SLIDE X]` advance markers; includes actual model metric numbers filled in (e.g. LightGBM Recall 0.8399, XGBoost Recall 0.8764), business impact figures ($518.07 avg fraud value, ~$32–39k prevented), threshold analysis results, and a Q&A quick-reference section for common audience questions
+- **`Presentation/index.html`** — standalone HTML presentation page with Chart.js charts, dark-themed UI with fixed navigation, and all project content rendered as a web page (can be opened in a browser directly, no server needed)
 
 ### Project Validation
 - Ran a full validation against `project_guidelines.md` and `rules.md`
@@ -15,6 +18,14 @@
 ### Testing Notebooks Added
 - **`Phase_2_testing.ipynb`** — 9 tests (Tests 6–14) validating feature engineering math: haversine distance, log_amt, age calculation, hour/day/month extraction, one-hot encoding alignment, and StandardScaler application
 - **`Phase_3_testing.ipynb`** — 5 tests (Tests 15–19) validating model inference: valid class label output, predict_proba in [0,1], determinism across 5 repeated calls, directional sanity (fraud pattern scores higher than legit), and batch prediction of 5 mixed rows
+
+### `project_guidelines.md` — Full Status Review & Update
+- Reviewed every checklist item against actual notebook content
+- Updated all completed items to `[x]` across Steps 1–9 (previously all unchecked)
+- Added bonus items achieved beyond the rubric: temporal EDA, Precision-Recall curves, business impact table, threshold optimisation chart
+- Flagged **Contribution Table** as `❌ MISSING` (Step 8) — only remaining required item before submission
+- Flagged SHAP as not implemented (optional bonus, mentioned as future work in Section 8.4)
+- Step 9 updated to reference `PRESENTATION_README.md`
 
 ### Housekeeping
 - Deleted `__pycache__/` directory from project root

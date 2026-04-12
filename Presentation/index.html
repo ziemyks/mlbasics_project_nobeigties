@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Card Fraud Detection — ML Project | RSU</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── RSU Dark Palette ──────────────────────────────────────────────── */
+    :root {
+      --bg:          #10080e;
+      --bg-card:     rgba(30, 14, 24, 0.7);
+      --bg-chart:    rgba(30, 14, 24, 0.5);
+      --border:      rgba(94, 0, 45, 0.18);
+      --border-hover: rgba(255, 75, 80, 0.35);
+      --burgundy:    #5e002d;
+      --burgundy-lt: #8a1538;
+      --coral:       #ff4b50;
+      --coral-soft:  #ff6b6f;
+      --rose:        #e8a0b0;
+      --cream:       #f5f0f2;
+      --text:        #d4c8cf;
+      --muted:       #8a7a82;
+      --muted-dark:  #5a4a52;
+      --green:       #22c55e;
+      --green-soft:  rgba(34, 197, 94, 0.7);
+      --teal:        #2dd4bf;
+    }
+
+    /* ── Reset & Base ──────────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── Navigation ────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(16, 8, 14, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px; padding: 0 16px; height: 56px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--muted); text-decoration: none; font-size: 13px;
+      font-weight: 500; padding: 6px 14px; border-radius: 8px;
+      transition: all 0.25s; white-space: nowrap;
+    }
+    nav a:hover, nav a.active {
+      color: var(--cream); background: rgba(255, 75, 80, 0.12);
+    }
+
+    /* ── Sections ──────────────────────────────────────────────────────── */
+    section {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 80px 24px 60px;
+    }
+    .container { max-width: 1100px; width: 100%; }
+
+    /* ── Typography ────────────────────────────────────────────────────── */
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff4b50 0%, #e8a0b0 40%, #f5f0f2 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1.15; margin-bottom: 20px;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700; color: var(--cream); margin-bottom: 12px;
+    }
+    h3 { font-size: 1.15rem; font-weight: 600; color: var(--rose); margin-bottom: 8px; }
+    .subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--muted); max-width: 680px; margin-bottom: 32px;
+    }
+    .label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--coral); margin-bottom: 12px;
+    }
+    .highlight { color: var(--coral); font-weight: 700; }
+    .highlight-red { color: var(--coral); font-weight: 700; }
+    .highlight-green { color: var(--green); font-weight: 700; }
+    .highlight-blue { color: var(--coral-soft); font-weight: 700; }
+    .highlight-purple { color: var(--rose); font-weight: 700; }
+
+    /* ── Cards ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-hover);
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Stat boxes ────────────────────────────────────────────────────── */
+    .stat-row {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      margin: 32px 0;
+    }
+    .stat-box {
+      flex: 1; min-width: 150px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; text-align: center;
+    }
+    .stat-box .number {
+      font-size: 2.4rem; font-weight: 800;
+      font-family: 'Courier New', monospace;
+    }
+    .stat-box .desc {
+      font-size: 13px; color: var(--muted); margin-top: 6px;
+    }
+
+    /* ── Hero specific ─────────────────────────────────────────────────── */
+    #hero { text-align: center; flex-direction: column; }
+    #hero .container { display: flex; flex-direction: column; align-items: center; }
+    .badge {
+      display: inline-block; padding: 6px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; letter-spacing: 1px;
+      background: rgba(94, 0, 45, 0.25); color: var(--coral);
+      border: 1px solid rgba(255, 75, 80, 0.25); margin-bottom: 24px;
+    }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 24px; padding: 14px 32px; border-radius: 12px;
+      background: linear-gradient(135deg, #5e002d, #ff4b50);
+      color: white; font-weight: 600; font-size: 15px;
+      text-decoration: none; transition: all 0.3s;
+      border: none; cursor: pointer;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 75, 80, 0.3); }
+    .scroll-hint {
+      margin-top: 48px; font-size: 12px; color: var(--muted-dark);
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    /* ── Blockquote ────────────────────────────────────────────────────── */
+    blockquote {
+      border-left: 3px solid var(--coral);
+      padding: 16px 20px; margin: 24px 0;
+      background: rgba(255, 75, 80, 0.06);
+      border-radius: 0 12px 12px 0;
+      font-style: italic; color: var(--rose);
+    }
+
+    /* ── Lists ─────────────────────────────────────────────────────────── */
+    ul.clean { list-style: none; }
+    ul.clean li {
+      padding: 8px 0; padding-left: 24px; position: relative;
+      font-size: 15px;
+    }
+    ul.clean li::before {
+      content: ''; position: absolute; left: 0; top: 16px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--coral);
+    }
+
+    /* ── Dividers ──────────────────────────────────────────────────────── */
+    .divider {
+      width: 60px; height: 3px; border-radius: 3px;
+      background: linear-gradient(90deg, var(--burgundy), var(--coral));
+      margin: 16px 0 28px;
+    }
+
+    /* ── Chart containers ──────────────────────────────────────────────── */
+    .chart-wrap {
+      background: var(--bg-chart);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px;
+      margin: 20px 0;
+    }
+    .chart-wrap canvas { max-height: 360px; }
+
+    /* ── Table ─────────────────────────────────────────────────────────── */
+    table th { color: var(--muted) !important; }
+    table td { color: var(--text); }
+
+    /* ── Fade-in on scroll ─────────────────────────────────────────────── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  NAVIGATION                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="#hero">Home</a>
+  <a href="#problem">Problem</a>
+  <a href="#dataset">Dataset</a>
+  <a href="#eda">EDA</a>
+  <a href="#features">Features</a>
+  <a href="#models">Models</a>
+  <a href="#results">Results</a>
+  <a href="#impact">Impact</a>
+  <a href="#demo">Demo</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 1 — HERO                                                      -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="container">
+    <div class="badge">RSU &middot; Basics of AI and Machine Learning &middot; April 2026</div>
+    <h1>Credit Card Fraud Detection<br>with Machine Learning</h1>
+    <p class="subtitle">
+      Building a complete ML pipeline — from 340,000 raw transactions
+      to a trained model that catches fraud in real time.
+    </p>
+    <a href="#problem" class="hero-cta">
+      Explore the Project &darr;
+    </a>
+    <div class="scroll-hint">&darr; scroll to begin</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 2 — THE PROBLEM                                               -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="label reveal">The Challenge</div>
+    <h2 class="reveal">Why Fraud Detection Is Hard</h2>
+    <div class="divider reveal"></div>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="reveal">
+        <p style="font-size: 15px; margin-bottom: 20px;">
+          A new credit card company in the western US wants to protect its customers.
+          They hired us to build a model that flags suspicious transactions —
+          and the executive was clear:
+        </p>
+        <blockquote>
+          "The model should err on the side of caution — it is better to flag
+          a legitimate transaction than to miss real fraud."
+        </blockquote>
+        <p style="font-size: 15px; margin-top: 20px;">
+          This means our primary metric is <span class="highlight">Recall</span> —
+          out of all actual fraud cases, how many does the model catch?
+        </p>
+      </div>
+
+      <div class="card reveal">
+        <h3>The Accuracy Trap</h3>
+        <p style="font-size: 14px; margin-bottom: 16px;">
+          Only <span class="highlight">0.52%</span> of transactions are fraud.
+          A model that always says "not fraud" would be:
+        </p>
+        <div style="text-align: center; margin: 20px 0;">
+          <div style="font-size: 3rem; font-weight: 800; color: var(--coral);">99.5%</div>
+          <div style="font-size: 13px; color: var(--muted);">
+            accurate — but catches <span class="highlight-red">ZERO</span> fraud
+          </div>
+        </div>
+        <p style="font-size: 14px; color: var(--muted);">
+          That's why accuracy is useless here. We measure what actually matters:
+          <span class="highlight-blue">Recall</span>,
+          <span class="highlight-purple">F1-Score</span>, and
+          <span class="highlight-green">ROC-AUC</span>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Metric explanation cards -->
+    <div class="grid-3" style="margin-top: 32px;">
+      <div class="card reveal">
+        <h3 style="color: var(--coral);">Recall</h3>
+        <p style="font-size: 13px;">
+          Of all real fraud cases, what percentage did we catch?
+          Like a security guard — one who catches 90% of shoplifters has 90% recall.
+        </p>
+      </div>
+      <div class="card reveal">
+        <h3 style="color: var(--rose);">F1-Score</h3>
+        <p style="font-size: 13px;">
+          Balances Recall and Precision into a single number.
+          The overall "grade" — avoids gaming one metric at the expense of the other.
+        </p>
+      </div>
+      <div class="card reveal">
+        <h3 style="color: var(--green);">ROC-AUC</h3>
+        <p style="font-size: 13px;">
+          How well the model ranks fraud higher than legitimate overall.
+          Score from 0.5 (random guessing) to 1.0 (perfect separation).
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 3 — DATASET                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="dataset">
+  <div class="container">
+    <div class="label reveal">The Data</div>
+    <h2 class="reveal">339,607 Real Transactions</h2>
+    <div class="divider reveal"></div>
+
+    <p class="subtitle reveal" style="max-width: 800px;">
+      Credit card transactions from the western United States — each row includes
+      customer details, merchant info, location coordinates, transaction amount,
+      and whether it was fraud.
+    </p>
+
+    <div class="stat-row reveal">
+      <div class="stat-box">
+        <div class="number" style="color: var(--coral);">339,607</div>
+        <div class="desc">Transactions</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--rose);">15</div>
+        <div class="desc">Original Columns</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--coral-soft);">1,761</div>
+        <div class="desc">Fraud Cases (0.52%)</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--green);">0</div>
+        <div class="desc">Missing Values</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap reveal">
+      <canvas id="chartClassBalance"></canvas>
+    </div>
+    <p style="font-size: 13px; color: var(--muted-dark); text-align: center; margin-top: 8px;" class="reveal">
+      The extreme class imbalance — 337,846 legitimate vs 1,761 fraud — is the central challenge of this project.
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 4 — EDA                                                       -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="eda" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Exploratory Data Analysis</div>
+    <h2 class="reveal">What Does Fraud Look Like?</h2>
+    <div class="divider reveal"></div>
+
+    <p class="subtitle reveal" style="max-width: 800px;">
+      Before training any model, we explored the data to find patterns. These discoveries
+      directly guided which features we engineered and which models we chose.
+    </p>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <!-- Fraud by hour -->
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">Fraud Rate by Hour of Day</h3>
+        <canvas id="chartFraudByHour"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px;">
+          Fraud peaks between <span class="highlight">1–4 AM</span> — criminals act while victims sleep.
+        </p>
+      </div>
+
+      <!-- Fraud by category -->
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">Top Fraud Categories</h3>
+        <canvas id="chartFraudByCategory"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px;">
+          Online categories (<span class="highlight">shopping_net</span>, <span class="highlight">misc_net</span>) have elevated fraud rates — no physical card check.
+        </p>
+      </div>
+    </div>
+
+    <!-- Key findings cards -->
+    <div class="grid-3" style="margin-top: 32px;">
+      <div class="card reveal">
+        <h3>Transaction Amount</h3>
+        <p style="font-size: 13px;">
+          Fraud transactions have a <span class="highlight">significantly higher median amount</span>
+          than legitimate ones. Criminals go big.
+        </p>
+      </div>
+      <div class="card reveal">
+        <h3>Geographic Distance</h3>
+        <p style="font-size: 13px;">
+          Fraudulent merchants are <span class="highlight">much further</span> from the cardholder's
+          location — distance became one of our top features.
+        </p>
+      </div>
+      <div class="card reveal">
+        <h3>Correlations</h3>
+        <p style="font-size: 13px;">
+          The correlation heatmap confirmed that <span class="highlight">amount</span> and
+          <span class="highlight">category</span> are the strongest individual signals,
+          but the real power comes from combining them.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 5 — FEATURE ENGINEERING                                       -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="features" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Feature Engineering</div>
+    <h2 class="reveal">Turning Raw Data Into Fraud Signals</h2>
+    <div class="divider reveal"></div>
+
+    <p class="subtitle reveal" style="max-width: 800px;">
+      The raw dataset had timestamps and coordinates — but models can't learn from a datetime string.
+      We created <span class="highlight">6 new features</span> that encode domain knowledge about how fraud works.
+    </p>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <!-- Feature cards -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128337;</div>
+          <div>
+            <h3>hour / day_of_week / month</h3>
+            <p style="font-size: 13px;">
+              Extracted from timestamp. Captures the <span class="highlight">1–4 AM fraud peak</span>
+              and weekly/seasonal patterns discovered in EDA.
+            </p>
+          </div>
+        </div>
+        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128100;</div>
+          <div>
+            <h3>age</h3>
+            <p style="font-size: 13px;">
+              Transaction date minus date of birth. Certain age groups are
+              <span class="highlight">targeted more frequently</span> by fraudsters.
+            </p>
+          </div>
+        </div>
+        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128205;</div>
+          <div>
+            <h3>distance_km</h3>
+            <p style="font-size: 13px;">
+              <span class="highlight">Haversine formula</span>: straight-line distance between cardholder and
+              merchant coordinates. A $4,000 purchase 8,000 km away screams fraud.
+            </p>
+          </div>
+        </div>
+        <div class="card reveal" style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="font-size: 28px; min-width: 40px; text-align: center;">&#128200;</div>
+          <div>
+            <h3>log_amt</h3>
+            <p style="font-size: 13px;">
+              <code style="color: var(--coral);">ln(1 + amount)</code> — compresses the extreme range ($1–$28,000+)
+              and reduces outlier influence. Standard technique for skewed financial data.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Also done -->
+      <div>
+        <div class="card reveal" style="margin-bottom: 16px;">
+          <h3>Also Applied</h3>
+          <ul class="clean" style="margin-top: 12px;">
+            <li><strong>One-Hot Encoding</strong> — converted <code style="color: var(--coral);">category</code> (14 values)
+                and <code style="color: var(--coral);">state</code> (13 values) into binary columns</li>
+            <li><strong>StandardScaler</strong> — rescaled numeric features to mean=0, std=1
+                (fitted on training data only to prevent leakage)</li>
+            <li><strong>Dropped</strong> — merchant name, city, job, transaction ID
+                (non-predictive or high-cardinality)</li>
+          </ul>
+        </div>
+
+        <div class="card reveal" style="border-color: rgba(255, 75, 80, 0.25);">
+          <h3 style="color: var(--coral);">Result</h3>
+          <p style="font-size: 14px; margin-top: 8px;">
+            <span class="highlight">15 raw columns</span> became
+            <span class="highlight">39 engineered features</span> —
+            and the features we created ranked among the model's
+            <strong>top predictors</strong> in Section 7.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 6 — MODELS                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="models" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Model Training</div>
+    <h2 class="reveal">5 Algorithms, From Simple to Powerful</h2>
+    <div class="divider reveal"></div>
+
+    <p class="subtitle reveal" style="max-width: 800px;">
+      We trained 5 models of increasing complexity. All were tuned using
+      <span class="highlight">5-fold cross-validation</span> with F1-Score as the optimisation metric.
+      SMOTE was applied to the training set to balance classes at 50/50.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
+        <div style="font-size: 24px; text-align: center; color: var(--muted);">1</div>
+        <div>
+          <h3>Logistic Regression</h3>
+          <p style="font-size: 13px; color: var(--muted);">
+            Linear boundary + sigmoid probability. Fast, interpretable — our <strong>baseline</strong>.
+            Cannot capture feature interactions.
+          </p>
+        </div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV &middot; C, solver</div>
+      </div>
+
+      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
+        <div style="font-size: 24px; text-align: center; color: var(--muted);">2</div>
+        <div>
+          <h3>Decision Tree</h3>
+          <p style="font-size: 13px; color: var(--muted);">
+            Learns yes/no questions: "Amount > $500? Hour > 22?" Non-linear, but a single tree
+            <strong>overfits</strong> easily.
+          </p>
+        </div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">GridSearchCV &middot; max_depth, criterion</div>
+      </div>
+
+      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
+        <div style="font-size: 24px; text-align: center; color: var(--muted);">3</div>
+        <div>
+          <h3>Random Forest</h3>
+          <p style="font-size: 13px; color: var(--muted);">
+            Ensemble of many independent trees that <strong>vote together</strong>.
+            Crowd wisdom reduces overfitting. Trees don't learn from each other's mistakes.
+          </p>
+        </div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; n_estimators, depth</div>
+      </div>
+
+      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center;">
+        <div style="font-size: 24px; text-align: center; color: var(--coral-soft);">4</div>
+        <div>
+          <h3 style="color: var(--cream);">XGBoost</h3>
+          <p style="font-size: 13px; color: var(--muted);">
+            <strong>Gradient boosting</strong> — each new tree corrects the previous tree's errors.
+            Like editors, each fixing what the last one missed.
+          </p>
+        </div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; lr, depth, subsample</div>
+      </div>
+
+      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr 160px; gap: 16px; align-items: center; border-color: rgba(255, 75, 80, 0.25);">
+        <div style="font-size: 24px; text-align: center; color: var(--coral);">5</div>
+        <div>
+          <h3 style="color: var(--coral);">LightGBM</h3>
+          <p style="font-size: 13px; color: var(--muted);">
+            Microsoft's fast gradient boosting. Same idea as XGBoost but
+            <strong>faster and more memory-efficient</strong> on large datasets. Our deployed model.
+          </p>
+        </div>
+        <div style="font-size: 11px; color: var(--muted-dark); text-align: right;">RandomizedSearchCV &middot; leaves, lr, depth</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 7 — RESULTS                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="results" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Evaluation</div>
+    <h2 class="reveal">Model Performance on Unseen Data</h2>
+    <div class="divider reveal"></div>
+
+    <p class="subtitle reveal" style="max-width: 800px;">
+      All metrics below are from the <span class="highlight">held-out test set</span> — 20% of data
+      the models never saw during training. This is the real exam.
+    </p>
+
+    <!-- Results table -->
+    <div class="card reveal" style="overflow-x: auto; margin-top: 24px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="border-bottom: 2px solid rgba(94, 0, 45, 0.25);">
+            <th style="text-align: left; padding: 12px 16px; font-weight: 600;">Model</th>
+            <th style="text-align: center; padding: 12px 8px; font-weight: 600;">Accuracy</th>
+            <th style="text-align: center; padding: 12px 8px; font-weight: 600;">Precision</th>
+            <th style="text-align: center; padding: 12px 8px; color: var(--coral) !important; font-weight: 700;">Recall</th>
+            <th style="text-align: center; padding: 12px 8px; color: var(--rose) !important; font-weight: 700;">F1-Score</th>
+            <th style="text-align: center; padding: 12px 8px; color: var(--green) !important; font-weight: 700;">ROC-AUC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.1);">
+            <td style="padding: 12px 16px; font-weight: 600; color: var(--coral);">LightGBM</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9988</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9257</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--coral); font-weight: 700;">0.8399</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--rose); font-weight: 700;">0.8807</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--green); font-weight: 700;">0.9978</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.1);">
+            <td style="padding: 12px 16px; font-weight: 600; color: var(--cream);">XGBoost</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9987</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.8691</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--coral-soft);">0.8764</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--rose);">0.8727</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--green);">0.9964</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.1);">
+            <td style="padding: 12px 16px; font-weight: 500;">Random Forest</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9978</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.8475</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.7022</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.7680</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9903</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.1);">
+            <td style="padding: 12px 16px; font-weight: 500;">Decision Tree</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9965</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.6343</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.7697</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.6954</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.8837</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; font-weight: 500; color: var(--muted);">Logistic Regression</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.9888</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.2699</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.6657</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.3841</td>
+            <td style="text-align: center; padding: 12px 8px; font-family: monospace;">0.8767</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Charts side by side -->
+    <div class="grid-2" style="margin-top: 32px;">
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">Recall Comparison — Fraud Cases Caught</h3>
+        <canvas id="chartRecall"></canvas>
+      </div>
+      <div class="chart-wrap reveal">
+        <h3 style="margin-bottom: 16px;">F1-Score &amp; ROC-AUC</h3>
+        <canvas id="chartF1Roc"></canvas>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top: 24px; border-color: rgba(255, 75, 80, 0.2);">
+      <p style="font-size: 14px;">
+        <strong style="color: var(--coral);">Key takeaway:</strong>
+        Accuracy barely moves (98.9%–99.9%) across all models — confirming it's useless on imbalanced data.
+        The real story is in Recall and F1. <span class="highlight">Gradient boosting models (XGBoost, LightGBM)</span>
+        clearly dominate, catching up to <strong>87.6%</strong> of all fraud cases.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 8 — BUSINESS IMPACT                                           -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="impact" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Business Impact</div>
+    <h2 class="reveal">What Model Choice Means in Dollars</h2>
+    <div class="divider reveal"></div>
+
+    <div class="stat-row reveal">
+      <div class="stat-box">
+        <div class="number" style="color: var(--coral);">$518</div>
+        <div class="desc">Average Fraud Transaction</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--green);">312</div>
+        <div class="desc">Fraud Caught (Best: XGBoost)</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--coral-soft);">237</div>
+        <div class="desc">Fraud Caught (Worst: LogReg)</div>
+      </div>
+      <div class="stat-box">
+        <div class="number" style="color: var(--rose);">~$32K</div>
+        <div class="desc">Prevented by Better Model</div>
+      </div>
+    </div>
+
+    <!-- Impact chart -->
+    <div class="chart-wrap reveal">
+      <h3 style="margin-bottom: 16px;">Fraud Cases Caught vs Missed — Per Model</h3>
+      <canvas id="chartImpact"></canvas>
+    </div>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="card reveal">
+        <h3 style="color: var(--coral);">The Cost of the Wrong Model</h3>
+        <p style="font-size: 14px;">
+          Logistic Regression misses <span class="highlight-red">119 fraud cases</span> with an estimated loss
+          of <span class="highlight-red">$61,650</span>. It also raises <strong>641 false alarms</strong> —
+          the worst of both worlds.
+        </p>
+      </div>
+      <div class="card reveal">
+        <h3 style="color: var(--green);">The Value of the Right Model</h3>
+        <p style="font-size: 14px;">
+          XGBoost misses only <span class="highlight-green">44 cases</span> ($22,795 est. loss)
+          with just <strong>47 false alarms</strong>. LightGBM trades 13 more missed cases for
+          <span class="highlight-green">only 24 false alarms</span> — the cleanest output.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 9 — DEMO                                                      -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="demo">
+  <div class="container" style="text-align: center;">
+    <div class="label reveal">Live Demonstration</div>
+    <h2 class="reveal">See the Model in Action</h2>
+    <div class="divider reveal" style="margin-left: auto; margin-right: auto;"></div>
+
+    <p class="subtitle reveal" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+      The trained LightGBM model is deployed as a Flask API. A Next.js dashboard
+      generates synthetic transactions, engineers features in real time, and displays
+      the fraud verdict.
+    </p>
+
+    <!-- Architecture -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 40px 0;" class="reveal">
+      <div class="card" style="padding: 16px 20px; text-align: center; min-width: 110px;">
+        <div style="font-size: 28px; margin-bottom: 6px;">&#127922;</div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--cream);">Synthetic<br>Generator</div>
+      </div>
+      <div style="color: var(--muted-dark); font-size: 24px;">&rarr;</div>
+      <div class="card" style="padding: 16px 20px; text-align: center; min-width: 110px;">
+        <div style="font-size: 28px; margin-bottom: 6px;">&#9881;&#65039;</div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--cream);">Feature<br>Engineering</div>
+      </div>
+      <div style="color: var(--muted-dark); font-size: 24px;">&rarr;</div>
+      <div class="card" style="padding: 16px 20px; text-align: center; min-width: 110px; border-color: rgba(255, 75, 80, 0.3);">
+        <div style="font-size: 28px; margin-bottom: 6px;">&#129504;</div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--coral);">LightGBM<br>Model</div>
+      </div>
+      <div style="color: var(--muted-dark); font-size: 24px;">&rarr;</div>
+      <div class="card" style="padding: 16px 20px; text-align: center; min-width: 110px;">
+        <div style="font-size: 28px; margin-bottom: 6px;">&#128202;</div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--cream);">Fraud<br>Verdict</div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 32px;">
+      <div class="hero-cta" style="display: inline-flex; opacity: 0.9; cursor: default; background: linear-gradient(135deg, #14532d, #22c55e);">
+        Live Demo &rarr;
+      </div>
+      <p style="font-size: 13px; color: var(--muted-dark); margin-top: 12px;">
+        Demo runs on a separate machine &mdash; Docker Compose with Flask API (port 5050) + Next.js UI (port 3000)
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  FOOTER                                                                 -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<footer style="text-align: center; padding: 40px 20px 32px; border-top: 1px solid var(--border);">
+  <p style="font-size: 12px; color: var(--muted-dark);">
+    Basics of AI and Machine Learning &mdash; RSU Final Project &mdash; April 2026
+  </p>
+  <p style="font-size: 11px; color: rgba(90, 74, 82, 0.6); margin-top: 6px;">
+    Dataset: Kaggle &middot; dhruvb2028/credit-card-fraud-dataset
+  </p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SCRIPTS                                                                -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Scroll reveal ───────────────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Active nav link ─────────────────────────────────────────────────────
+const sections = document.querySelectorAll('section');
+const navLinks = document.querySelectorAll('nav a');
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => navObserver.observe(s));
+
+// ── Chart defaults (RSU warm palette) ───────────────────────────────────
+Chart.defaults.color = '#8a7a82';
+Chart.defaults.borderColor = 'rgba(94, 0, 45, 0.1)';
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+const CORAL = 'rgba(255, 75, 80, 0.8)';
+const CORAL_SOFT = 'rgba(255, 75, 80, 0.5)';
+const CORAL_DIM = 'rgba(255, 75, 80, 0.25)';
+const BURGUNDY = 'rgba(94, 0, 45, 0.5)';
+const GREEN = 'rgba(34, 197, 94, 0.7)';
+const ROSE = 'rgba(232, 160, 176, 0.6)';
+const MUTED = 'rgba(138, 122, 130, 0.35)';
+
+// ── Chart: Class Balance (horizontal bar) ───────────────────────────────
+new Chart(document.getElementById('chartClassBalance'), {
+  type: 'bar',
+  data: {
+    labels: ['Legitimate', 'Fraud'],
+    datasets: [{
+      data: [337846, 1761],
+      backgroundColor: [GREEN, CORAL],
+      borderColor: ['#22c55e', '#ff4b50'],
+      borderWidth: 1, borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.raw.toLocaleString() + ' transactions' } }
+    },
+    scales: {
+      x: { ticks: { callback: v => (v/1000)+'K' }, grid: { color: 'rgba(94,0,45,0.06)' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Chart: Fraud by Hour ────────────────────────────────────────────────
+const hourLabels = Array.from({length: 24}, (_, i) => i + ':00');
+const fraudByHour = [1.2, 2.8, 3.1, 3.4, 2.9, 1.1, 0.4, 0.3, 0.25, 0.2, 0.2, 0.2,
+                     0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.3, 0.4, 0.7, 1.0];
+new Chart(document.getElementById('chartFraudByHour'), {
+  type: 'bar',
+  data: {
+    labels: hourLabels,
+    datasets: [{
+      label: 'Fraud Rate (%)',
+      data: fraudByHour,
+      backgroundColor: fraudByHour.map(v => v > 1.5 ? CORAL : MUTED),
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { callback: v => v+'%' }, grid: { color: 'rgba(94,0,45,0.06)' } },
+      x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }, grid: { display: false } }
+    }
+  }
+});
+
+// ── Chart: Fraud by Category ────────────────────────────────────────────
+new Chart(document.getElementById('chartFraudByCategory'), {
+  type: 'bar',
+  data: {
+    labels: ['shopping_net', 'grocery_net', 'misc_net', 'shopping_pos', 'grocery_pos', 'food_dining', 'entertainment'],
+    datasets: [{
+      label: 'Fraud Rate (%)',
+      data: [1.42, 1.38, 1.18, 0.62, 0.55, 0.48, 0.42],
+      backgroundColor: [
+        CORAL, 'rgba(255,75,80,0.65)', 'rgba(255,75,80,0.5)',
+        MUTED, 'rgba(138,122,130,0.3)', 'rgba(138,122,130,0.25)', 'rgba(138,122,130,0.2)'
+      ],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { callback: v => v+'%' }, grid: { color: 'rgba(94,0,45,0.06)' } },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ── Chart: Recall Comparison ────────────────────────────────────────────
+const modelNames = ['LightGBM', 'XGBoost', 'Random Forest', 'Decision Tree', 'Log. Regression'];
+const recallVals = [0.8399, 0.8764, 0.7022, 0.7697, 0.6657];
+const recallColors = recallVals.map(v => v > 0.83 ? CORAL : v > 0.7 ? BURGUNDY : MUTED);
+
+new Chart(document.getElementById('chartRecall'), {
+  type: 'bar',
+  data: {
+    labels: modelNames,
+    datasets: [{
+      label: 'Recall',
+      data: recallVals,
+      backgroundColor: recallColors,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => 'Recall: ' + (ctx.raw * 100).toFixed(2) + '% — ' + Math.round(ctx.raw * 356) + '/356 fraud caught' } }
+    },
+    scales: {
+      x: { min: 0, max: 1, ticks: { callback: v => (v*100)+'%' }, grid: { color: 'rgba(94,0,45,0.06)' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Chart: F1 + ROC-AUC grouped ─────────────────────────────────────────
+new Chart(document.getElementById('chartF1Roc'), {
+  type: 'bar',
+  data: {
+    labels: modelNames,
+    datasets: [
+      {
+        label: 'F1-Score',
+        data: [0.8807, 0.8727, 0.7680, 0.6954, 0.3841],
+        backgroundColor: ROSE,
+        borderRadius: 4,
+      },
+      {
+        label: 'ROC-AUC',
+        data: [0.9978, 0.9964, 0.9903, 0.8837, 0.8767],
+        backgroundColor: GREEN,
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: { legend: { position: 'top', labels: { boxWidth: 14, padding: 16 } } },
+    scales: {
+      x: { min: 0, max: 1, ticks: { callback: v => v.toFixed(1) }, grid: { color: 'rgba(94,0,45,0.06)' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Chart: Business Impact (stacked) ────────────────────────────────────
+new Chart(document.getElementById('chartImpact'), {
+  type: 'bar',
+  data: {
+    labels: ['XGBoost', 'LightGBM', 'Random Forest', 'Log. Regression'],
+    datasets: [
+      {
+        label: 'Caught',
+        data: [312, 299, 250, 237],
+        backgroundColor: GREEN,
+        borderRadius: { topLeft: 4, bottomLeft: 4 },
+      },
+      {
+        label: 'Missed',
+        data: [44, 57, 106, 119],
+        backgroundColor: CORAL,
+        borderRadius: { topRight: 4, bottomRight: 4 },
+      }
+    ]
+  },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 14, padding: 16 } },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + ' / 356 fraud cases' } }
+    },
+    scales: {
+      x: { stacked: true, grid: { color: 'rgba(94,0,45,0.06)' } },
+      y: { stacked: true, grid: { display: false } }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
