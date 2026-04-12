@@ -290,6 +290,7 @@
   <a href="#metrics">Metrics</a>
   <a href="#models">Models</a>
   <a href="#results">Results</a>
+  <a href="#threshold">Threshold</a>
   <a href="#impact">Impact</a>
   <a href="#takeaways">Takeaways</a>
   <a href="#demo">Demo</a>
@@ -1228,7 +1229,150 @@
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<!--  SECTION 8 - BUSINESS IMPACT                                           -->
+<!--  SECTION - THRESHOLD OPTIMIZATION                                      -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="threshold" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+  <div class="container">
+    <div class="label reveal">Threshold Optimisation</div>
+    <h2 class="reveal">Tuning When the Model Says "Fraud"</h2>
+    <div class="divider reveal"></div>
+
+    <div class="reveal" style="
+      border-left: 3px solid var(--burgundy-lt);
+      padding-left: 24px;
+      display: flex; flex-direction: column; gap: 18px;
+      margin-bottom: 36px;
+    ">
+      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Idea</p>
+      <p class="slide-statement" style="margin: 0;">The model outputs a probability. We decide the cutoff.</p>
+      <blockquote style="margin: 0;">
+        Default is 0.5 — but lowering it catches more fraud at the cost of more false alarms.
+        <strong>The business chooses where on that curve to sit.</strong>
+      </blockquote>
+    </div>
+
+    <!-- Smoke alarm analogy -->
+    <div class="grid-3" style="margin-bottom: 32px;">
+      <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.15);">
+        <div style="font-size: 32px; margin-bottom: 10px;">🔕</div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Threshold 0.7 — Cautious</div>
+        <div style="font-size: 12px; color: var(--muted-dark);">Only flags very high-confidence fraud. Fewer false alarms, but misses some real fraud.</div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 12px; color: var(--muted-dark);">Recall <span style="color: var(--muted); font-weight: 700;">82.3%</span> · Precision <span style="color: var(--muted); font-weight: 700;">94.2%</span></div>
+          <div style="font-size: 12px; color: var(--muted-dark);">293 caught · <span style="color: var(--green);">18 false alarms</span></div>
+        </div>
+      </div>
+      <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.45);">
+        <div style="font-size: 32px; margin-bottom: 10px;">⚖️</div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--coral); margin-bottom: 6px;">Threshold 0.4 — Optimal F1 ★</div>
+        <div style="font-size: 12px; color: var(--muted-dark);">Best balance between catching fraud and keeping false alarms low. Selected as our optimal point.</div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 12px; color: var(--muted-dark);">Recall <span style="color: var(--coral); font-weight: 700;">85.4%</span> · Precision <span style="color: var(--coral); font-weight: 700;">91.6%</span></div>
+          <div style="font-size: 12px; color: var(--muted-dark);">304 caught · <span style="color: #fbbf24;">28 false alarms</span></div>
+        </div>
+      </div>
+      <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.15);">
+        <div style="font-size: 32px; margin-bottom: 10px;">🚨</div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Threshold 0.1 — Maximum Recall</div>
+        <div style="font-size: 12px; color: var(--muted-dark);">Catches almost everything — but raises far more false alarms. Customers get blocked more often.</div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 12px; color: var(--muted-dark);">Recall <span style="color: var(--muted); font-weight: 700;">87.1%</span> · Precision <span style="color: var(--muted); font-weight: 700;">87.3%</span></div>
+          <div style="font-size: 12px; color: var(--muted-dark);">310 caught · <span style="color: var(--coral);">45 false alarms</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line chart -->
+    <div class="chart-wrap reveal">
+      <h3 style="margin-bottom: 4px;">Precision / Recall / F1 vs Threshold — LightGBM</h3>
+      <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">As threshold increases, Recall drops and Precision rises. F1 peaks at 0.4 — the sweet spot.</p>
+      <canvas id="chartThreshold" style="max-height: 320px;"></canvas>
+    </div>
+
+    <!-- Full results table -->
+    <div class="card reveal" style="overflow-x: auto; margin-top: 28px;">
+      <h3 style="margin-bottom: 16px;">All Thresholds — Full Results</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="border-bottom: 2px solid rgba(94,0,45,0.25);">
+            <th style="text-align: center; padding: 10px 14px; font-weight: 600;">Threshold</th>
+            <th style="text-align: center; padding: 10px 8px; color: var(--coral) !important; font-weight: 700;">Recall</th>
+            <th style="text-align: center; padding: 10px 8px; font-weight: 600;">Precision</th>
+            <th style="text-align: center; padding: 10px 8px; color: var(--rose) !important; font-weight: 700;">F1-Score</th>
+            <th style="text-align: center; padding: 10px 8px; font-weight: 600;">Fraud Caught</th>
+            <th style="text-align: center; padding: 10px 8px; font-weight: 600;">False Alarms</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.1</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8708</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8732</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8720</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">310</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--coral);">45</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.2</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8680</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8957</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8816</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">309</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--coral);">36</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.3</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8596</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.9027</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8806</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">306</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: #fbbf24;">33</td>
+          </tr>
+          <!-- OPTIMAL ROW -->
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1); background: rgba(255,75,80,0.06);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--coral); font-weight: 700;">0.4 ★</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; background: rgba(255,75,80,0.18); border-radius: 6px; color: var(--coral); font-weight: 700;">0.8539</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; background: rgba(34,197,94,0.1); border-radius: 6px; color: var(--green); font-weight: 700;">0.9157</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; background: rgba(232,160,176,0.22); border-radius: 6px; color: var(--rose); font-weight: 700;">0.8837</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--coral); font-weight: 700;">304</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--green); font-weight: 700;">28</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.5 <span style="font-size: 10px; color: var(--muted-dark);">default</span></td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8399</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.9257</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8807</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">299</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--green);">24</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(94,0,45,0.1);">
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.6</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8287</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.9306</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8767</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">295</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--green);">22</td>
+          </tr>
+          <tr>
+            <td style="text-align: center; padding: 10px 14px; font-family: monospace; color: var(--muted);">0.7</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8230</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.9421</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">0.8786</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--muted);">293</td>
+            <td style="text-align: center; padding: 10px 8px; font-family: monospace; color: var(--green);">18</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px; text-align: center;">
+        ★ Optimal threshold = <strong style="color: var(--coral);">0.4</strong> — highest F1-Score (0.8837), best balance of catching fraud vs. false alarms
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION - BUSINESS IMPACT                                             -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <section id="impact" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
   <div class="container">
@@ -1849,6 +1993,81 @@ const modelNames = ['LightGBM', 'XGBoost', 'Random Forest', 'Decision Tree', 'Lo
       scales: {
         x: { grid: { display: false }, ticks: { color: 'rgba(184,168,176,0.8)', font: { size: 11 } } },
         y: { ticks: { color: 'rgba(184,168,176,0.7)', callback: v => v + '%' }, grid: { color: 'rgba(94,0,45,0.1)' } }
+      }
+    }
+  });
+})();
+
+// ── Chart: Threshold Optimisation (line chart) ──────────────────────────
+(function() {
+  const ctx = document.getElementById('chartThreshold').getContext('2d');
+  const thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7];
+  const recall     = [0.8708, 0.8680, 0.8596, 0.8539, 0.8399, 0.8287, 0.8230];
+  const precision  = [0.8732, 0.8957, 0.9027, 0.9157, 0.9257, 0.9306, 0.9421];
+  const f1         = [0.8720, 0.8816, 0.8806, 0.8837, 0.8807, 0.8767, 0.8786];
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: thresholds.map(t => t.toFixed(1)),
+      datasets: [
+        {
+          label: 'Recall',
+          data: recall,
+          borderColor: 'rgba(255,75,80,0.9)',
+          backgroundColor: 'rgba(255,75,80,0.08)',
+          pointBackgroundColor: recall.map((_, i) => i === 3 ? '#ff4b50' : 'rgba(255,75,80,0.5)'),
+          pointRadius: recall.map((_, i) => i === 3 ? 7 : 4),
+          borderWidth: 2.5, tension: 0.35, fill: false,
+        },
+        {
+          label: 'Precision',
+          data: precision,
+          borderColor: 'rgba(34,197,94,0.9)',
+          backgroundColor: 'rgba(34,197,94,0.08)',
+          pointBackgroundColor: precision.map((_, i) => i === 3 ? '#22c55e' : 'rgba(34,197,94,0.5)'),
+          pointRadius: precision.map((_, i) => i === 3 ? 7 : 4),
+          borderWidth: 2.5, tension: 0.35, fill: false,
+        },
+        {
+          label: 'F1-Score',
+          data: f1,
+          borderColor: 'rgba(232,160,176,0.9)',
+          backgroundColor: 'rgba(232,160,176,0.08)',
+          pointBackgroundColor: f1.map((_, i) => i === 3 ? '#e8a0b0' : 'rgba(232,160,176,0.5)'),
+          pointRadius: f1.map((_, i) => i === 3 ? 7 : 4),
+          borderWidth: 2.5, tension: 0.35, fill: false,
+          borderDash: [5, 3],
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { color: 'rgba(184,168,176,0.9)', boxWidth: 14, padding: 16 } },
+        tooltip: {
+          callbacks: {
+            label: c => c.dataset.label + ': ' + c.raw.toFixed(4),
+            afterBody: (items) => {
+              if (items[0].dataIndex === 3) return ['★ Optimal threshold — highest F1'];
+              return [];
+            }
+          }
+        },
+        annotation: {}
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Classification Threshold', color: 'rgba(184,168,176,0.7)', font: { size: 12 } },
+          ticks: { color: 'rgba(184,168,176,0.8)' },
+          grid: { color: 'rgba(94,0,45,0.1)' }
+        },
+        y: {
+          min: 0.75, max: 0.97,
+          title: { display: true, text: 'Score', color: 'rgba(184,168,176,0.7)', font: { size: 12 } },
+          ticks: { color: 'rgba(184,168,176,0.8)', callback: v => v.toFixed(2) },
+          grid: { color: 'rgba(94,0,45,0.1)' }
+        }
       }
     }
   });
