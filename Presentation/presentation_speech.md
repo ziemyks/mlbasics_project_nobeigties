@@ -27,7 +27,7 @@ Our main goal was simple to state: catch as much fraud as possible, before the c
 
 **The accuracy trap.**
 
-Now — before we even looked at a single model, we ran into a fundamental problem. Only **0.52% of all transactions in the dataset are fraud**. That's 1,761 fraud cases out of nearly 340,000 transactions.
+Now — before we even looked at a single model, we ran into a fundamental problem. Only **0.52% of all transactions in the dataset are fraud**. That's 1,782 fraud cases out of nearly 340,000 transactions.
 
 Think about what that means. If you built the laziest possible model — one that looks at every transaction and always says "not fraud, approve it" — that model would be **99.5% accurate**. Sounds impressive. But it catches absolutely zero fraud. Every single criminal walks away.
 
@@ -55,11 +55,11 @@ We used a Kaggle dataset of **339,607 credit card transactions** from the wester
 
 So the data is rich. We have geography, timing, amounts, categories, customer demographics. Everything a fraud analyst would want to look at.
 
-Now here's where it gets difficult. Out of those 339,607 transactions, only **1,761 are fraud**. That's **0.52%**. Not even one percent.
+Now here's where it gets difficult. Out of those 339,607 transactions, only **1,782 are fraud**. That's **0.52%**. Not even one percent.
 
 *[gesture toward the charts]*
 
-The bar chart shows this visually — and it's almost impossible to see. The fraud bar is barely a sliver next to 337,846 legitimate transactions. The pie chart shows the percentages: 99.48% legitimate, 0.52% fraud.
+The bar chart shows this visually — and it's almost impossible to see. The fraud bar is barely a sliver next to 337,825 legitimate transactions. The pie chart shows the percentages: 99.48% legitimate, 0.52% fraud.
 
 Here's a way to think about it that makes the scale concrete. Imagine you're screening people at an airport. For every 200 passengers who walk through, one of them is carrying something they shouldn't. The other 199 are completely innocent. Your job is to find that one person without holding up the other 199 for too long.
 
@@ -67,7 +67,7 @@ That's the problem. And it immediately tells us something important about what w
 
 **A model that always says "not fraud" — for every single transaction, no exceptions — would score 99.5% accuracy.** It's not wrong very often! But it's completely useless. It catches zero fraud. Not one criminal is stopped.
 
-This is the accuracy trap I mentioned in the previous slide, showing up in the data. Standard accuracy measures how often you're right overall. On an imbalanced dataset like this, "right overall" mostly just means "you correctly handled the easy 99.5%." We need metrics that focus on the fraud class specifically — which is why we track Recall, F1, and ROC-AUC. I'll explain all three when we get to the results.
+This is the accuracy trap I mentioned in the previous slide, showing up in the data. And that imbalance doesn't just affect how we measure things — it shapes every decision that follows: how we train the model, how we balance the data before training, and which metrics we use to evaluate performance. Everything you'll see in the next sections flows from this single fact about the dataset.
 
 ---
 
@@ -79,13 +79,13 @@ We found four patterns that turned out to be really important.
 
 **The first one is timing.** Fraud doesn't happen randomly throughout the day. It peaks sharply between **1 and 4 in the morning**. Think about why — if someone steals your card details, they want to use them before you notice. And the best time to do that is while you're asleep and not checking your bank app.
 
-**The second pattern is amounts.** Fraudulent transactions tend to be significantly larger than legitimate ones. Criminals go for bigger purchases — they're not buying coffee. The median fraud amount is noticeably higher than the median legitimate amount. This immediately told us that transaction amount was going to be an important feature.
+**The second pattern is amounts.** Fraudulent transactions are significantly larger than legitimate ones. The average fraudulent transaction in this dataset is **$518**. The average legitimate transaction is around **$70**. That's nearly an eight-to-one difference. Criminals go for bigger purchases — they're not buying coffee.
 
-**Third — merchant categories.** When we looked at which types of merchants had the highest fraud rates, online categories like `shopping_net` and `misc_net` stood out. This makes intuitive sense — online purchases don't require the physical card to be present, so stolen card numbers are easier to use there.
+**Third — merchant categories.** The types of merchants with the highest fraud rates were online categories — online shopping, online miscellaneous. This makes intuitive sense: online purchases don't require the physical card to be present, so stolen card numbers are easy to use there. No cashier, no signature, no chip to read.
 
-**And fourth — geography.** We looked at the distance between where the cardholder lives and where the merchant is located. Fraudulent transactions tend to happen at merchants that are much further away from the cardholder's home address. A purchase at a merchant 8,000 km away, on a card registered in California — that's a very suspicious signal.
+**And fourth — geography.** We calculated the distance between where the cardholder lives and where the merchant is located. Fraudulent transactions tend to happen at merchants that are much further away from the cardholder's home. A purchase at a merchant thousands of kilometres away, on a card registered in California — that's a very suspicious signal. In fact, distance ended up as the **third most important feature** in the final model — behind transaction amount and cardholder age, both of which also ranked extremely high.
 
-Now — these aren't just interesting observations. Every single one of these patterns translated directly into a feature we engineered in the next step.
+You can think of these four patterns as one fingerprint — hour, amount, distance, category. They don't each prove fraud on their own. But together, they paint a picture. And every single one translated directly into a feature we engineered in the next step.
 
 ---
 
@@ -141,7 +141,7 @@ We trained five models, deliberately starting simple and increasing in complexit
 
 **Model 4: XGBoost — Extreme Gradient Boosting.** Now we move from parallel trees to sequential ones. XGBoost builds trees one at a time, where each new tree specifically focuses on correcting the mistakes the previous trees made. It's like a team of editors where each person only fixes what the previous person got wrong. Iterative, focused, powerful.
 
-**Model 5: LightGBM — Light Gradient Boosting Machine**, developed by Microsoft. Same boosting idea as XGBoost, but engineered for speed and memory efficiency on large datasets. It's the model we ultimately deployed.
+**Model 5: LightGBM — Light Gradient Boosting Machine**, developed by Microsoft. Same sequential boosting idea as XGBoost, but engineered for speed and memory efficiency on large datasets. It's the model we ultimately deployed — chosen not because it catches the absolute most fraud, but because it catches nearly as much as XGBoost **while producing far fewer false alarms**. 24 false positives versus 47 for XGBoost. That means fewer legitimate customers being blocked unnecessarily. I'll come back to that trade-off when we look at the business impact.
 
 Every model was tuned using **5-fold cross-validation** — we split the training data into 5 parts, trained on 4 and validated on 1, rotated through all 5 combinations, and averaged the results. This gives a much more reliable estimate of performance than a single validation run. We optimised on **F1-Score**, which balances Recall and Precision.
 
@@ -149,15 +149,9 @@ Every model was tuned using **5-fold cross-validation** — we split the trainin
 
 ## [SLIDE 8] Results Comparison
 
-Before I show you the numbers — let me quickly explain what we're actually measuring, because these three metrics are what the whole project comes down to.
+The three metrics — Recall, F1-Score, and ROC-AUC — are defined on the Models slide you just saw. So let me go straight to what the numbers actually show.
 
-**Recall** — this is our primary metric, the one that comes directly from the brief. Out of every real fraud case in the test data, what percentage did the model catch? If there are 100 fraud cases and the model catches 84, Recall is 0.84. Higher is better. Missing fraud is what we're trying to avoid.
-
-**F1-Score** — this balances Recall against Precision. Precision answers: of everything the model flagged as fraud, how much was actually fraud? If we flag every single transaction as fraud, Recall is perfect — but Precision is terrible and we've blocked every customer. F1 keeps both in check.
-
-**ROC-AUC** — this measures how well the model separates fraud from legitimate transactions overall, across every possible decision threshold. A score of 0.5 means the model is guessing randomly. A score of 1.0 is perfect. Our best model reached 0.9978.
-
-Now — here are the actual results on the held-out test set. This is data none of the models ever saw during training.
+These are results on the held-out test set. Data none of the models ever saw during training.
 
 *[point to table]*
 
@@ -222,7 +216,7 @@ But 0.5 is arbitrary. We can move that dial.
 
 We tested our best model at thresholds from 0.1 all the way to 0.7 and watched what happened to Recall and Precision.
 
-At **threshold 0.3**, Recall climbs to 0.87 — we catch more fraud, but we also flag more legitimate transactions. More false alarms.
+At **threshold 0.3**, Recall climbs to 0.86 — we catch more fraud, but we also flag more legitimate transactions. More false alarms.
 
 At **threshold 0.5** (the default), Recall is 0.84, Precision is 0.93. A strong balance.
 
@@ -314,17 +308,17 @@ And **deep learning architectures** like TabNet or FT-Transformer, which have sh
 
 ## [SLIDE 18] Key Takeaways and Q&A
 
-To close, five things I'd like you to take away from this:
+I want to close with five things you should take away from this project. These are on screen — I'll walk through each one briefly.
 
-**One — accuracy is meaningless on imbalanced data.** If 99.5% of your data is one class, a model that ignores the other class looks great. Always check Recall, F1, and ROC-AUC when classes are unbalanced.
+**One — accuracy is meaningless on imbalanced data.** When 99.5% of your data is one class, any model that ignores the minority looks great. Accuracy told us nothing. Recall, F1, and ROC-AUC told us everything. If you ever work on a classification problem with unbalanced classes, this is the first thing to remember.
 
-**Two — feature engineering matters as much as model choice.** The features we hand-crafted — distance, hour, log amount, age — ranked among the model's top predictors. A great model on poor features will be beaten by a decent model on great features.
+**Two — feature engineering matters as much as model choice.** Hour, distance, age, and log amount — features we built from scratch — ranked among the top predictors. We didn't find those patterns by trying more algorithms. We found them by understanding the problem first, then building the right numbers.
 
-**Three — gradient boosting dominates tabular fraud detection.** XGBoost and LightGBM outperformed every simpler model by a significant margin. This is consistent with the broader literature on tabular data.
+**Three — gradient boosting dominates tabular fraud detection.** XGBoost and LightGBM outperformed every simpler model by a clear margin. Each tree in the sequence learns from the previous one's mistakes — that iterative focus is what captures subtle multi-feature fraud patterns that a single tree or a straight line never could.
 
-**Four — data leakage is the most dangerous silent mistake.** SMOTE only on training data. Scaler fitted only on training data. If you apply these to the full dataset first, your metrics look better in the notebook — and fall apart in production.
+**Four — data leakage is the most dangerous silent mistake.** SMOTE only on training data. Scaler fitted only on training data. Apply these to all data first and your metrics look better in the notebook — then fall apart in production. We were careful to avoid it, and that's exactly the kind of care that separates a working system from one that only works on paper.
 
-**Five — model selection is a business decision, not just a technical one.** The difference between our best and worst model translates to tens of thousands of dollars in prevented fraud. The people making that choice need to understand what Recall actually means.
+**Five — model selection is a business decision, not a technical one.** The difference between our best and worst model is approximately $39,000 in prevented fraud on this test set alone. Scale that to millions of real transactions and the stakes are enormous. The people choosing the model need to understand what Recall actually means — and why it matters more than accuracy.
 
 Thank you. We're happy to take questions.
 
