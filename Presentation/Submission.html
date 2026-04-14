@@ -30,13 +30,22 @@
 
     /* ── Reset & Base ──────────────────────────────────────────────────── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 0;
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.7;
       overflow-x: hidden;
+      height: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
     }
 
     /* ── Navigation ────────────────────────────────────────────────────── */
@@ -58,10 +67,19 @@
       color: var(--cream); background: rgba(255, 75, 80, 0.12);
     }
 
-    /* ── Sections ──────────────────────────────────────────────────────── */
+    /* ── Sections — full-screen scroll-snap slides ──────────────────── */
     section {
-      min-height: 100vh; display: flex; align-items: center;
-      justify-content: center; padding: 80px 24px 60px;
+      height: 100vh;
+      min-height: 100vh !important;
+      max-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 80px 24px 40px;
+      overflow-y: auto;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      box-sizing: border-box;
     }
     .container { max-width: 1100px; width: 100%; }
 
@@ -74,17 +92,17 @@
       background-clip: text; line-height: 1.15; margin-bottom: 20px;
     }
     h2 {
-      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-      font-weight: 700; color: var(--cream); margin-bottom: 12px;
+      font-size: clamp(1.25rem, 2.8vw, 1.8rem);
+      font-weight: 700; color: var(--cream); margin-bottom: 8px;
     }
-    h3 { font-size: 1.15rem; font-weight: 600; color: var(--rose); margin-bottom: 8px; }
+    h3 { font-size: 1rem; font-weight: 600; color: var(--rose); margin-bottom: 6px; }
     .subtitle {
       font-size: clamp(1rem, 2vw, 1.25rem);
       color: var(--muted); max-width: 680px; margin-bottom: 32px;
     }
     .label {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--coral); margin-bottom: 12px;
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--coral); margin-bottom: 8px;
     }
     .highlight { color: var(--coral); font-weight: 700; }
     .highlight-red { color: var(--coral); font-weight: 700; }
@@ -96,7 +114,7 @@
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px;
+      border-radius: 12px; padding: 16px 20px;
       transition: transform 0.25s ease, border-color 0.25s ease,
                   box-shadow 0.25s ease, background 0.25s ease;
     }
@@ -135,22 +153,22 @@
       border-color: rgba(239,68,68,0.9);
       box-shadow: 0 8px 28px rgba(239,68,68,0.32);
     }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     @media (max-width: 768px) {
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
 
     /* ── Stat boxes ────────────────────────────────────────────────────── */
     .stat-row {
-      display: flex; gap: 20px; flex-wrap: wrap;
-      margin: 32px 0;
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin: 12px 0;
     }
     .stat-box {
-      flex: 1; min-width: 150px;
+      flex: 1; min-width: 120px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px 20px; text-align: center;
+      border-radius: 12px; padding: 14px 12px; text-align: center;
       transition: transform 0.25s ease, border-color 0.25s ease,
                   box-shadow 0.25s ease, background 0.25s ease;
     }
@@ -162,11 +180,11 @@
                   0 0 0 1px rgba(180, 170, 175, 0.12);
     }
     .stat-box .number {
-      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800;
+      font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 800;
       font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1;
     }
     .stat-box .desc {
-      font-size: 13px; color: var(--muted); margin-top: 10px;
+      font-size: 11px; color: var(--muted); margin-top: 6px;
       font-weight: 500;
     }
 
@@ -200,10 +218,10 @@
     /* ── Blockquote ────────────────────────────────────────────────────── */
     blockquote {
       border-left: 3px solid var(--coral);
-      padding: 16px 20px; margin: 24px 0;
+      padding: 10px 16px; margin: 8px 0;
       background: rgba(255, 75, 80, 0.06);
-      border-radius: 0 12px 12px 0;
-      font-style: italic; color: var(--rose);
+      border-radius: 0 10px 10px 0;
+      font-style: italic; color: var(--rose); font-size: 13px;
     }
 
     /* ── Lists ─────────────────────────────────────────────────────────── */
@@ -220,17 +238,17 @@
 
     /* ── Dividers ──────────────────────────────────────────────────────── */
     .divider {
-      width: 60px; height: 3px; border-radius: 3px;
+      width: 50px; height: 2px; border-radius: 2px;
       background: linear-gradient(90deg, var(--burgundy), var(--coral));
-      margin: 16px 0 28px;
+      margin: 8px 0 14px;
     }
 
     /* ── Chart containers ──────────────────────────────────────────────── */
     .chart-wrap {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px;
-      margin: 20px 0;
+      border-radius: 12px; padding: 14px 18px;
+      margin: 8px 0;
       transition: transform 0.25s ease, border-color 0.25s ease,
                   box-shadow 0.25s ease, background 0.25s ease;
     }
@@ -241,7 +259,7 @@
       box-shadow: 0 12px 40px rgba(180, 170, 175, 0.18),
                   0 0 0 1px rgba(180, 170, 175, 0.12);
     }
-    .chart-wrap canvas { max-height: 360px; }
+    .chart-wrap canvas { max-height: 200px; }
 
     /* ── Table ─────────────────────────────────────────────────────────── */
     table th { color: var(--muted) !important; }
@@ -249,12 +267,12 @@
 
     /* ── Presentation-style classes ───────────────────────────────────── */
     .slide-statement {
-      font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+      font-size: clamp(1rem, 2vw, 1.35rem);
       font-weight: 700; color: var(--cream);
-      line-height: 1.35; margin-bottom: 10px;
+      line-height: 1.3; margin-bottom: 6px;
     }
     .key-callout {
-      padding: 20px 28px;
+      padding: 14px 20px;
       background: linear-gradient(135deg, rgba(94,0,45,0.3), rgba(255,75,80,0.1));
       border: 1px solid rgba(255,75,80,0.3);
       border-radius: 14px; margin: 28px 0;
@@ -313,6 +331,69 @@
       /* Prevent cards/tables splitting across pages */
       .card, table, figure, .chart-wrap { break-inside: avoid; page-break-inside: avoid; }
     }
+
+    /* ── Screenshot slide box ────────────────────────────────────────── */
+    /* Each section is the full-viewport centering wrapper.
+       The .container inside is the actual "slide" you screenshot. */
+    section {
+      align-items: center !important;
+      padding: 80px 20px 20px !important; /* nav height top, tight elsewhere */
+    }
+
+    section > .container {
+      /* Standard 16:9 widescreen presentation dimensions */
+      width: 1270px;
+      max-width: 1270px;
+      height: 714px;
+      min-height: 714px;
+      max-height: 714px;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding: 24px 40px 18px;
+
+      /* The screenshot border — blue dotted */
+      outline: 2.5px dashed rgba(59, 130, 246, 0.75);
+      outline-offset: 0px;
+      border-radius: 4px;
+
+      /* Subtle glow so the box stands out against the dark bg */
+      box-shadow:
+        0 0 0 8px rgba(59, 130, 246, 0.04),
+        0 0 32px rgba(59, 130, 246, 0.08),
+        inset 0 0 0 1px rgba(59, 130, 246, 0.06);
+
+      position: relative;
+      background: var(--bg);
+    }
+
+    /* Corner label showing slide dimensions */
+    section > .container::before {
+      content: '1270 × 714 · 16:9';
+      position: absolute;
+      top: -22px;
+      left: 0;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: rgba(59, 130, 246, 0.55);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── Continuation slide headers ───────────────────────────────────── */
+    .cont-header { margin-bottom: 14px; }
+    .cont-crumb {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+    }
+    .cont-crumb-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 1.8px;
+      text-transform: uppercase; color: var(--coral);
+    }
+    .cont-crumb-badge {
+      font-size: 10px; font-weight: 600; color: rgba(59, 130, 246, 0.6);
+      letter-spacing: 0.5px;
+    }
+    .cont-header h2 { margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -322,6 +403,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <nav id="navbar">
   <a href="#hero">Home</a>
+  <a href="#toc">Contents</a>
   <a href="#problem">Problem</a>
   <a href="#dataset">Dataset</a>
   <a href="#eda">Findings</a>
@@ -343,6 +425,9 @@
   <div class="container">
     <div class="badge">RSU &middot; Basics of AI and Machine Learning &middot; April 2026</div>
     <h1>Credit Card Fraud Detection<br>with Machine Learning</h1>
+    <p style="font-size: 13px; color: var(--muted); margin-top: 10px; margin-bottom: 4px;">
+      <strong>Group:</strong> Girts Ziemanis, Ugis Rutins, Maris Zelcs, Evija Sturmane, Jolanta Stutane
+    </p>
     <p class="subtitle">
       Building a complete ML pipeline - from 340,000 raw transactions
       to a trained model that catches fraud in real time.
@@ -351,6 +436,47 @@
       Explore the Project &darr;
     </a>
     <div class="scroll-hint">&darr; scroll to begin</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!--  SECTION 1b - TABLE OF CONTENTS                                        -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<section id="toc">
+  <div class="container">
+    <div class="label reveal">Overview</div>
+    <h2 class="reveal">Table of Contents</h2>
+    <div class="divider reveal"></div>
+    <div class="grid-2" style="gap: 14px; margin-top: 14px;">
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">01 &mdash; Introduction</p>
+        <p style="font-size: 13px; color: var(--text);">Problem Statement &amp; Motivation</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">02 &mdash; The Data</p>
+        <p style="font-size: 13px; color: var(--text);">Dataset Overview &amp; Exploratory Analysis</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">03 &mdash; Data Engineering</p>
+        <p style="font-size: 13px; color: var(--text);">Feature Engineering &amp; Data Preparation</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">04 &mdash; Evaluation Framework</p>
+        <p style="font-size: 13px; color: var(--text);">Metrics &amp; Model Selection Criteria</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">05 &mdash; Model Training</p>
+        <p style="font-size: 13px; color: var(--text);">5 Algorithms: Logistic Regression &rarr; LightGBM</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">06 &mdash; Results &amp; Optimisation</p>
+        <p style="font-size: 13px; color: var(--text);">Performance Comparison &amp; Threshold Tuning</p>
+      </div>
+      <div class="card reveal" style="padding: 14px 18px;">
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">07 &mdash; Conclusions</p>
+        <p style="font-size: 13px; color: var(--text);">Business Impact, Takeaways &amp; Live Demo</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -364,7 +490,7 @@
     <div class="divider reveal"></div>
 
     <!-- Real-world hook -->
-    <p class="reveal" style="font-size: 16px; color: var(--rose); max-width: 820px; margin-bottom: 36px; line-height: 1.8;">
+    <p class="reveal" style="font-size: 14px; color: var(--rose); max-width: 820px; margin-bottom: 16px; line-height: 1.6;">
       Card fraud costs the industry
       <span class="highlight">billions of dollars every year</span>.
       Detection systems are the last line of defence between criminals and customers —
@@ -372,7 +498,7 @@
     </p>
 
     <!-- Business context + accuracy trap -->
-    <div class="grid-2" style="margin-bottom: 36px;">
+    <div class="grid-2" style="margin-bottom: 16px;">
       <div class="reveal" style="
         border-left: 3px solid var(--burgundy-lt);
         padding-left: 24px;
@@ -407,8 +533,19 @@
       </div>
     </div>
 
-    <!-- Two types of errors -->
-    <div class="card reveal" style="margin-bottom: 36px;">
+  </div>
+</section>
+
+<!-- SLIDE: Problem · continued -->
+<section id="problem-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">The Problem</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Two Types of Mistakes &amp; Why They Matter</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="card reveal" style="margin-bottom: 10px;">
       <h3 style="margin-bottom: 6px;">Two Types of Mistakes</h3>
       <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">Not all errors are equal - one is far more costly</p>
       <div class="grid-2" style="gap: 20px;">
@@ -456,7 +593,7 @@
     <h2 class="reveal">339,607 Real Transactions</h2>
     <div class="divider reveal"></div>
 
-    <p class="reveal" style="font-size: 16px; color: var(--rose); max-width: 820px; margin-bottom: 36px; line-height: 1.8;">
+    <p class="reveal" style="font-size: 14px; color: var(--rose); max-width: 820px; margin-bottom: 12px; line-height: 1.6;">
       Credit card transactions from the western United States. Each row is one purchase -
       customer details, merchant, category, location, amount, timestamp,
       and whether it was <span class="highlight">fraud</span>.
@@ -483,16 +620,16 @@
 
     <div class="grid-2" style="margin-top: 8px;">
       <div class="chart-wrap reveal">
-        <h3 style="margin-bottom: 16px;">Volume - Legitimate vs Fraud</h3>
+        <h3 style="margin-bottom: 8px;">Volume - Legitimate vs Fraud</h3>
         <canvas id="chartClassBar"></canvas>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px; text-align: center;">
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 6px; text-align: center;">
           337,825 legitimate transactions vs 1,782 fraud
         </p>
       </div>
       <div class="chart-wrap reveal">
-        <h3 style="margin-bottom: 16px;">Share of Dataset (%)</h3>
+        <h3 style="margin-bottom: 8px;">Share of Dataset (%)</h3>
         <canvas id="chartClassPie"></canvas>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 12px; text-align: center;">
+        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 6px; text-align: center;">
           99.48% legitimate &nbsp;|&nbsp; <span class="highlight">0.52% fraud</span>
         </p>
       </div>
@@ -500,11 +637,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-top: 28px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-top: 6px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Core Challenge</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">The Core Challenge</p>
       <p class="slide-statement" style="margin: 0;">Only 1 in 193 transactions is fraud.</p>
       <blockquote style="margin: 0;">
         This imbalance shapes every decision that follows —
@@ -517,7 +654,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 4 - EDA                                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="eda" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="eda">
   <div class="container">
     <div class="label reveal">Data Findings</div>
     <h2 class="reveal">What Does Fraud Look Like?</h2>
@@ -525,11 +662,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 8px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 10px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">Core Finding</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">Core Finding</p>
       <p class="slide-statement" style="margin: 0;">Fraud has a fingerprint.</p>
       <blockquote style="margin: 0;">
         Night hours, large amounts, distant merchants —
@@ -557,8 +694,20 @@
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- SLIDE: Data Findings · continued -->
+<section id="eda-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Data Findings</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Amount, Distance &amp; Key Patterns</h2>
+      <div class="divider"></div>
+    </div>
+
     <!-- Amount + Distance distribution charts -->
-    <div class="grid-2" style="margin-top: 24px;">
+    <div class="grid-2" style="margin-top: 8px;">
       <div class="chart-wrap reveal">
         <h3 style="margin-bottom: 4px;">Transaction Amount Distribution</h3>
         <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">Fraud transactions cluster in higher amount ranges — average <span style="color:var(--coral);font-weight:700;">$518</span> vs <span style="color:var(--muted);font-weight:700;">~$70</span> legitimate</p>
@@ -572,7 +721,7 @@
     </div>
 
     <!-- Key findings cards -->
-    <div class="grid-3" style="margin-top: 32px;">
+    <div class="grid-3" style="margin-top: 14px;">
       <div class="card reveal">
         <h3>Transaction Amount</h3>
         <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px;">Fraud transactions are significantly larger than legitimate ones. Criminals go for big purchases.</p>
@@ -612,7 +761,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 5 - FEATURE ENGINEERING                                       -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="features" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="features">
   <div class="container">
     <div class="label reveal">Feature Engineering</div>
     <h2 class="reveal">Turning Raw Data Into Fraud Signals</h2>
@@ -620,11 +769,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 14px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Idea</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">The Idea</p>
       <p class="slide-statement" style="margin: 0;">The raw data doesn't speak fraud. We taught it how.</p>
       <blockquote style="margin: 0;">
         A timestamp is just a number. But <strong>3 AM on a Wednesday</strong> tells a very different story.
@@ -632,7 +781,7 @@
     </div>
 
     <!-- 4 feature cards with raw → engineered transformations -->
-    <div class="grid-2" style="margin-bottom: 20px;">
+    <div class="grid-2" style="margin-bottom: 10px;">
 
       <div class="card reveal">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -712,6 +861,18 @@
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- SLIDE: Feature Engineering · continued -->
+<section id="features-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Feature Engineering</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Encoding Categories &amp; the Outcome</h2>
+      <div class="divider"></div>
+    </div>
+
     <!-- One-hot + result -->
     <div class="grid-2">
       <div class="card reveal">
@@ -754,105 +915,74 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 6 - DATA PREPARATION                                          -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="dataprep" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="dataprep">
   <div class="container">
     <div class="label reveal">Data Preparation</div>
     <h2 class="reveal">Splitting the Data — Before Any Model Sees It</h2>
     <div class="divider reveal"></div>
 
-    <div class="reveal" style="
-      border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
-    ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Rule</p>
-      <p class="slide-statement" style="margin: 0;">You can't test a student on questions they've already seen the answers to.</p>
-      <blockquote style="margin: 0;">
-        We locked away 20% of the data before any training happened —
-        <strong>the model never saw it until the final exam.</strong>
-      </blockquote>
+    <!-- The Rule — condensed single line -->
+    <div class="reveal" style="border-left: 3px solid var(--burgundy-lt); padding-left: 16px; margin-bottom: 12px;">
+      <p style="font-size: 11px; color: var(--muted); margin: 0 0 2px;">The Rule</p>
+      <p style="font-size: 14px; font-weight: 700; color: var(--cream); margin: 0;">You can't test a student on questions they've already seen the answers to — so we locked away 20% before any training began.</p>
     </div>
 
-    <!-- Train / Test split visual -->
-    <div class="card reveal" style="margin-bottom: 20px;">
-      <h3 style="margin-bottom: 16px;">The 80 / 20 Split</h3>
-      <div style="display: flex; border-radius: 10px; overflow: hidden; height: 48px; margin-bottom: 16px;">
-        <div style="flex: 80; background: linear-gradient(90deg, rgba(94,0,45,0.7), rgba(255,75,80,0.45));
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 700; color: var(--cream);">
-          80% — Training Data &nbsp;<span style="font-size: 12px; color: var(--rose);">(271,685 transactions)</span>
-        </div>
-        <div style="flex: 20; background: rgba(34,197,94,0.25); border-left: 2px solid var(--green);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 700; color: var(--green);">
-          20% — Test
-        </div>
-      </div>
-      <div class="grid-2" style="gap: 16px;">
-        <div style="padding: 14px 18px; background: rgba(255,75,80,0.07); border-radius: 10px; border: 1px solid rgba(255,75,80,0.2);">
-          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--coral); margin-bottom: 6px;">Training set</div>
-          <p style="font-size: 13px; color: var(--muted);">What the model <strong>learns from</strong>. It sees these transactions during training and adjusts itself to detect patterns.</p>
-        </div>
-        <div style="padding: 14px 18px; background: rgba(34,197,94,0.07); border-radius: 10px; border: 1px solid rgba(34,197,94,0.2);">
-          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 6px;">Test set — locked away</div>
-          <p style="font-size: 13px; color: var(--muted);">The <strong>real exam</strong>. The model never sees these during training. All final results — Recall, F1, AUC — are measured here.</p>
-        </div>
-      </div>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;">
-        <div style="display: flex; align-items: center; gap: 7px; padding: 6px 12px; background: rgba(138,122,130,0.08); border: 1px solid rgba(138,122,130,0.2); border-radius: 8px;">
-          <span style="font-size: 11px; color: var(--muted-dark);">reproducibility</span>
-          <code style="font-size: 12px; background: rgba(255,75,80,0.1); border: 1px solid rgba(255,75,80,0.2); border-radius: 4px; padding: 1px 7px; color: var(--coral-soft); font-family: monospace;">random_state=42</code>
-        </div>
-        <div style="display: flex; align-items: center; gap: 7px; padding: 6px 12px; background: rgba(138,122,130,0.08); border: 1px solid rgba(138,122,130,0.2); border-radius: 8px;">
-          <span style="font-size: 11px; color: var(--muted-dark);">preserves fraud ratio</span>
-          <code style="font-size: 12px; background: rgba(255,75,80,0.1); border: 1px solid rgba(255,75,80,0.2); border-radius: 4px; padding: 1px 7px; color: var(--coral-soft); font-family: monospace;">stratify=y</code>
-        </div>
-      </div>
-    </div>
+    <!-- Two columns: 80/20 card LEFT, SMOTE + Scaling stacked RIGHT -->
+    <div class="grid-2" style="gap: 14px; align-items: start;">
 
-    <!-- SMOTE + Scaling side by side -->
-    <div class="grid-2">
-
+      <!-- LEFT: 80/20 split -->
       <div class="card reveal">
-        <h3>Fixing the Imbalance — SMOTE</h3>
-        <p style="font-size: 13px; color: var(--muted); margin: 10px 0 16px;">
-          Generates synthetic fraud examples by blending existing ones — until the training set is balanced. The model now sees equal amounts of both classes.
-        </p>
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <div style="text-align: center; padding: 10px 16px; background: rgba(255,75,80,0.08); border-radius: 8px; border: 1px solid rgba(255,75,80,0.2);">
-            <div style="font-size: 18px; font-weight: 800; color: var(--muted);">0.52%</div>
-            <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">fraud before SMOTE</div>
+        <h3 style="margin-bottom: 8px;">The 80 / 20 Split</h3>
+        <div style="display: flex; border-radius: 8px; overflow: hidden; height: 40px; margin-bottom: 12px;">
+          <div style="flex: 80; background: linear-gradient(90deg, rgba(94,0,45,0.7), rgba(255,75,80,0.45)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--cream);">
+            80% — Training &nbsp;<span style="font-size: 11px; color: var(--rose);">(271,685)</span>
           </div>
-          <span style="color: var(--coral); font-weight: 700; font-size: 1.2rem;">&#8594;</span>
-          <div style="text-align: center; padding: 10px 16px; background: rgba(34,197,94,0.08); border-radius: 8px; border: 1px solid rgba(34,197,94,0.2);">
-            <div style="font-size: 18px; font-weight: 800; color: var(--green);">50%</div>
-            <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">fraud after SMOTE</div>
+          <div style="flex: 20; background: rgba(34,197,94,0.25); border-left: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--green);">
+            20% Test
           </div>
         </div>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 14px;">
-          &#9888; Applied <strong>only to the training set</strong> — test set stays untouched.
-        </p>
+        <div class="grid-2" style="gap: 10px;">
+          <div style="padding: 10px 14px; background: rgba(255,75,80,0.07); border-radius: 8px; border: 1px solid rgba(255,75,80,0.2);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--coral); margin-bottom: 4px;">Training set</div>
+            <p style="font-size: 12px; color: var(--muted);">What the model <strong>learns from</strong>. It adjusts itself to detect patterns.</p>
+          </div>
+          <div style="padding: 10px 14px; background: rgba(34,197,94,0.07); border-radius: 8px; border: 1px solid rgba(34,197,94,0.2);">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 4px;">Test — locked away</div>
+            <p style="font-size: 12px; color: var(--muted);">The <strong>real exam</strong>. All final results — Recall, F1, AUC — measured here.</p>
+          </div>
+        </div>
       </div>
 
-      <div class="card reveal">
-        <h3>Putting Features on Equal Footing</h3>
-        <p style="font-size: 13px; color: var(--muted); margin: 10px 0 16px;">
-          <strong>StandardScaler</strong> rescales all numeric features to the same centre and spread — so a feature with large numbers doesn't dominate one with small numbers.
-        </p>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <div style="padding: 8px 14px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 12px; color: var(--muted-dark); font-family: monospace;">
-            amount: $0 – $28,476
-          </div>
-          <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
-          <div style="padding: 8px 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; font-size: 12px; color: var(--green); font-family: monospace;">
-            scaled: -1.2 to 3.4
+      <!-- RIGHT: SMOTE + Scaling stacked -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card reveal">
+          <h3 style="margin-bottom: 6px;">Fixing the Imbalance — SMOTE</h3>
+          <p style="font-size: 12px; color: var(--muted); margin: 0 0 10px;">Generates synthetic fraud examples until the training set is balanced.</p>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="text-align: center; padding: 8px 14px; background: rgba(255,75,80,0.08); border-radius: 8px; border: 1px solid rgba(255,75,80,0.2);">
+              <div style="font-size: 16px; font-weight: 800; color: var(--muted);">0.52%</div>
+              <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">before</div>
+            </div>
+            <span style="color: var(--coral); font-weight: 700; font-size: 1.1rem;">&#8594;</span>
+            <div style="text-align: center; padding: 8px 14px; background: rgba(34,197,94,0.08); border-radius: 8px; border: 1px solid rgba(34,197,94,0.2);">
+              <div style="font-size: 16px; font-weight: 800; color: var(--green);">50%</div>
+              <div style="font-size: 11px; color: var(--muted-dark); margin-top: 2px;">after</div>
+            </div>
+            <p style="font-size: 11px; color: var(--muted-dark); margin: 0;">&#9888; Training set only — test set stays untouched.</p>
           </div>
         </div>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-top: 14px;">
-          &#9888; Fitted <strong>on training data only</strong> — prevents test information from leaking into training.
-        </p>
+        <div class="card reveal">
+          <h3 style="margin-bottom: 6px;">Putting Features on Equal Footing</h3>
+          <p style="font-size: 12px; color: var(--muted); margin: 0 0 10px;"><strong>StandardScaler</strong> — so large numbers don't dominate small ones.</p>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="padding: 7px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 12px; color: var(--muted-dark); font-family: monospace;">$0 – $28,476</div>
+            <span style="color: var(--coral); font-weight: 700;">&#8594;</span>
+            <div style="padding: 7px 12px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; font-size: 12px; color: var(--green); font-family: monospace;">-1.2 to 3.4</div>
+            <p style="font-size: 11px; color: var(--muted-dark); margin: 0;">&#9888; Fitted on training data only.</p>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
@@ -860,7 +990,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 7 - METRICS                                                   -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="metrics" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="metrics">
   <div class="container">
     <div class="label reveal">Evaluation</div>
     <h2 class="reveal">How We Measure Success</h2>
@@ -868,11 +998,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 40px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">Why Not Accuracy?</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">Why Not Accuracy?</p>
       <p class="slide-statement" style="margin: 0;">A model that always says "not fraud" would be 99.5% accurate — and catch zero fraud.</p>
       <blockquote style="margin: 0;">
         We need metrics that focus specifically on the fraud class —
@@ -928,7 +1058,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 8 - MODELS                                                    -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="models" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="models">
   <div class="container">
     <div class="label reveal">Model Training</div>
     <h2 class="reveal">5 Algorithms, From Simple to Powerful</h2>
@@ -936,11 +1066,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Approach</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">The Approach</p>
       <p class="slide-statement" style="margin: 0;">Start simple. Add complexity only when needed.</p>
       <blockquote style="margin: 0;">
         Each model fixes the weakness of the one before it —
@@ -949,7 +1079,7 @@
     </div>
 
     <!-- Models 1–3: simple to ensemble -->
-    <div class="grid-3" style="margin-bottom: 20px;">
+    <div class="grid-3" style="margin-bottom: 12px;">
 
       <div class="card reveal">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
@@ -1012,8 +1142,19 @@
       </div>
     </div>
 
-    <!-- Models 4–5: gradient boosting pair -->
-    <p class="reveal" style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--coral); margin-bottom: 16px;">Gradient Boosting &mdash; where each tree fixes the last one's mistakes</p>
+  </div>
+</section>
+
+<!-- SLIDE: Model Training · continued -->
+<section id="models-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Model Training</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Gradient Boosting — Each Tree Fixes the Last One's Mistakes</h2>
+      <div class="divider"></div>
+    </div>
+
+    <p class="reveal" style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--coral); margin-bottom: 16px;">Sequential learning &mdash; unlike Random Forest, each tree targets what the previous one got wrong</p>
     <div class="grid-2">
 
       <div class="card reveal" style="border-color: rgba(255,75,80,0.25);">
@@ -1065,7 +1206,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 8 - RESULTS                                                   -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="results" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="results">
   <div class="container">
     <div class="label reveal">Evaluation</div>
     <h2 class="reveal">Model Performance on Unseen Data</h2>
@@ -1073,11 +1214,11 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Real Exam</p>
+      <p style="font-size: 13px; color: var(--muted); margin: 0;">The Real Exam</p>
       <p class="slide-statement" style="margin: 0;">All numbers come from data the models never saw.</p>
       <blockquote style="margin: 0;">
         The test set was locked away before training began —
@@ -1086,91 +1227,114 @@
     </div>
 
     <!-- Results table -->
-    <div class="card reveal" style="overflow-x: auto; margin-top: 24px;">
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+    <div class="card reveal" style="overflow-x: auto; margin-top: 8px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
         <thead>
           <tr style="border-bottom: 2px solid rgba(94, 0, 45, 0.25);">
-            <th style="text-align: left; padding: 12px 16px; font-weight: 600;">Model</th>
-            <th style="text-align: center; padding: 12px 8px; font-weight: 600;">Accuracy</th>
-            <th style="text-align: center; padding: 12px 8px; font-weight: 600;">Precision</th>
-            <th style="text-align: center; padding: 12px 8px; color: var(--coral) !important; font-weight: 700;">Recall</th>
-            <th style="text-align: center; padding: 12px 8px; color: var(--rose) !important; font-weight: 700;">F1-Score</th>
-            <th style="text-align: center; padding: 12px 8px; color: var(--green) !important; font-weight: 700;">ROC-AUC</th>
+            <th style="text-align: left; padding: 8px 12px; font-weight: 600;">Model</th>
+            <th style="text-align: center; padding: 8px 6px; font-weight: 600;">Accuracy</th>
+            <th style="text-align: center; padding: 8px 6px; font-weight: 600;">Precision</th>
+            <th style="text-align: center; padding: 8px 6px; color: var(--coral) !important; font-weight: 700;">Recall</th>
+            <th style="text-align: center; padding: 8px 6px; color: var(--rose) !important; font-weight: 700;">F1-Score</th>
+            <th style="text-align: center; padding: 8px 6px; color: var(--green) !important; font-weight: 700;">ROC-AUC</th>
           </tr>
         </thead>
         <tbody>
           <!-- LightGBM — Recall mid-high, F1 best, AUC best -->
           <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.12);">
-            <td style="padding: 12px 16px; font-weight: 700; color: var(--coral);">LightGBM ★</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted);">0.9988</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.14); border-radius: 6px; color: var(--green); font-weight: 700;">0.9257</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(255,75,80,0.18); border-radius: 6px; color: var(--coral); font-weight: 700;">0.8399</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(232,160,176,0.22); border-radius: 6px; color: var(--rose); font-weight: 700;">0.8807</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.22); border-radius: 6px; color: var(--green); font-weight: 700;">0.9978</td>
+            <td style="padding: 8px 12px; font-weight: 700; color: var(--coral);">LightGBM ★</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.9988</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(34,197,94,0.14); border-radius: 6px; color: var(--green); font-weight: 700;">0.9257</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(255,75,80,0.18); border-radius: 6px; color: var(--coral); font-weight: 700;">0.8399</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(232,160,176,0.22); border-radius: 6px; color: var(--rose); font-weight: 700;">0.8807</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(34,197,94,0.22); border-radius: 6px; color: var(--green); font-weight: 700;">0.9978</td>
           </tr>
-          <!-- XGBoost — Recall best, F1 strong, AUC strong -->
+          <!-- XGBoost -->
           <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.12);">
-            <td style="padding: 12px 16px; font-weight: 600; color: var(--cream);">XGBoost</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted);">0.9987</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.09); border-radius: 6px; color: var(--muted);">0.8691</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(255,75,80,0.24); border-radius: 6px; color: var(--coral); font-weight: 700;">0.8764</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(232,160,176,0.20); border-radius: 6px; color: var(--rose); font-weight: 600;">0.8727</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.19); border-radius: 6px; color: var(--green); font-weight: 600;">0.9964</td>
+            <td style="padding: 8px 12px; font-weight: 600; color: var(--cream);">XGBoost</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.9987</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.8691</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(255,75,80,0.24); border-radius: 6px; color: var(--coral); font-weight: 700;">0.8764</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(232,160,176,0.20); border-radius: 6px; color: var(--rose); font-weight: 600;">0.8727</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; background: rgba(34,197,94,0.19); border-radius: 6px; color: var(--green); font-weight: 600;">0.9964</td>
           </tr>
-          <!-- Random Forest — mid across all -->
+          <!-- Random Forest -->
           <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.12);">
-            <td style="padding: 12px 16px; font-weight: 500; color: var(--text);">Random Forest</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted);">0.9978</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.06); border-radius: 6px; color: var(--muted);">0.8475</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(255,75,80,0.08); border-radius: 6px; color: var(--muted);">0.7022</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(232,160,176,0.10); border-radius: 6px; color: var(--muted);">0.7680</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(34,197,94,0.12); border-radius: 6px; color: var(--muted);">0.9903</td>
+            <td style="padding: 8px 12px; font-weight: 500; color: var(--text);">Random Forest</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.9978</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.8475</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.7022</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.7680</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.9903</td>
           </tr>
-          <!-- Decision Tree — weak F1, ok Recall -->
+          <!-- Decision Tree -->
           <tr style="border-bottom: 1px solid rgba(94, 0, 45, 0.12);">
-            <td style="padding: 12px 16px; font-weight: 500; color: var(--text);">Decision Tree</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted);">0.9965</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.6343</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(255,75,80,0.11); border-radius: 6px; color: var(--muted);">0.7697</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; background: rgba(232,160,176,0.06); border-radius: 6px; color: var(--muted);">0.6954</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.8837</td>
+            <td style="padding: 8px 12px; font-weight: 500; color: var(--text);">Decision Tree</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.9965</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.6343</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.7697</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted);">0.6954</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.8837</td>
           </tr>
-          <!-- Logistic Regression — weakest -->
+          <!-- Logistic Regression -->
           <tr>
-            <td style="padding: 12px 16px; font-weight: 500; color: var(--muted-dark);">Logistic Regression</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.9888</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.2699</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.6657</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.3841</td>
-            <td style="text-align: center; padding: 12px 8px; font-family: monospace; color: var(--muted-dark);">0.8767</td>
+            <td style="padding: 8px 12px; font-weight: 500; color: var(--muted-dark);">Logistic Regression</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.9888</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.2699</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.6657</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.3841</td>
+            <td style="text-align: center; padding: 8px 6px; font-family: monospace; color: var(--muted-dark);">0.8767</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+  </div>
+</section>
+
+<!-- SLIDE: Evaluation · continued -->
+<section id="results-b">
+  <div class="container">
+    <div class="cont-header reveal" style="margin-bottom: 4px;">
+      <div class="cont-crumb"><span class="cont-crumb-label">Evaluation</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Performance Charts — All 5 Models</h2>
+      <div class="divider"></div>
+    </div>
     <!-- Chart 1: Caught vs Missed (full width) -->
-    <div class="chart-wrap reveal" style="margin-top: 32px;">
+    <div class="chart-wrap reveal" style="margin-top: 0;">
       <h3 style="margin-bottom: 4px;">Fraud Cases Caught vs Missed — out of 356 in the test set</h3>
       <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">The most concrete way to see model performance — actual fraud cases, not percentages</p>
-      <canvas id="chartCaughtMissed" style="max-height: 280px;"></canvas>
+      <canvas id="chartCaughtMissed" style="max-height: 150px;"></canvas>
     </div>
 
     <!-- Charts side by side -->
-    <div class="grid-2" style="margin-top: 20px;">
+    <div class="grid-2" style="margin-top: 8px;">
       <div class="chart-wrap reveal">
         <h3 style="margin-bottom: 4px;">Recall — % of Fraud Caught</h3>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">Higher is better. Gradient boosting pulls clearly ahead.</p>
-        <canvas id="chartRecall"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 8px;">Higher is better. Gradient boosting pulls clearly ahead.</p>
+        <canvas id="chartRecall" style="max-height: 170px;"></canvas>
       </div>
       <div class="chart-wrap reveal">
         <h3 style="margin-bottom: 4px;">F1-Score &amp; ROC-AUC</h3>
-        <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">F1 balances precision and recall. AUC measures overall separation.</p>
-        <canvas id="chartF1Roc"></canvas>
+        <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 8px;">F1 balances precision and recall. AUC measures overall separation.</p>
+        <canvas id="chartF1Roc" style="max-height: 170px;"></canvas>
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- SLIDE: Evaluation · continued -->
+<section id="results-c">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Evaluation</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>Confusion Matrix &amp; Feature Importance — LightGBM ★</h2>
+      <div class="divider"></div>
+    </div>
+
     <!-- Confusion matrix + Feature importance -->
-    <div class="grid-2" style="margin-top: 24px; align-items: stretch;">
+    <div class="grid-2" style="margin-top: 8px; align-items: stretch;">
 
       <!-- Confusion Matrix -->
       <div class="card reveal">
@@ -1254,11 +1418,10 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-top: 32px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-top: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">Verdict</p>
       <p class="slide-statement" style="margin: 0;">Accuracy barely moves. Recall tells the real story.</p>
       <blockquote style="margin: 0;">
         Gradient boosting wins by a wide margin —
@@ -1271,7 +1434,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION - THRESHOLD OPTIMIZATION                                      -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="threshold" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="threshold">
   <div class="container">
     <div class="label reveal">Threshold Optimisation</div>
     <h2 class="reveal">Tuning When the Model Says "Fraud"</h2>
@@ -1279,11 +1442,10 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 36px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Idea</p>
       <p class="slide-statement" style="margin: 0;">The model outputs a probability. We decide the cutoff.</p>
       <blockquote style="margin: 0;">
         Default is 0.5 — but lowering it catches more fraud at the cost of more false alarms.
@@ -1292,9 +1454,8 @@
     </div>
 
     <!-- Smoke alarm analogy -->
-    <div class="grid-3" style="margin-bottom: 32px;">
+    <div class="grid-3" style="margin-bottom: 14px;">
       <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.15);">
-        <div style="font-size: 32px; margin-bottom: 10px;">🔕</div>
         <div style="font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Threshold 0.7 — Cautious</div>
         <div style="font-size: 12px; color: var(--muted-dark);">Only flags very high-confidence fraud. Fewer false alarms, but misses some real fraud.</div>
         <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
@@ -1303,7 +1464,6 @@
         </div>
       </div>
       <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.45);">
-        <div style="font-size: 32px; margin-bottom: 10px;">⚖️</div>
         <div style="font-size: 13px; font-weight: 700; color: var(--coral); margin-bottom: 6px;">Threshold 0.4 — Optimal F1 ★</div>
         <div style="font-size: 12px; color: var(--muted-dark);">Best balance between catching fraud and keeping false alarms low. Selected as our optimal point.</div>
         <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
@@ -1312,7 +1472,6 @@
         </div>
       </div>
       <div class="card reveal" style="text-align: center; border-color: rgba(255,75,80,0.15);">
-        <div style="font-size: 32px; margin-bottom: 10px;">🚨</div>
         <div style="font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px;">Threshold 0.1 — Maximum Recall</div>
         <div style="font-size: 12px; color: var(--muted-dark);">Catches almost everything — but raises far more false alarms. Customers get blocked more often.</div>
         <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px;">
@@ -1326,11 +1485,22 @@
     <div class="chart-wrap reveal">
       <h3 style="margin-bottom: 4px;">Precision / Recall / F1 vs Threshold — LightGBM</h3>
       <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">As threshold increases, Recall drops and Precision rises. F1 peaks at 0.4 — the sweet spot.</p>
-      <canvas id="chartThreshold" style="max-height: 320px;"></canvas>
+      <canvas id="chartThreshold" style="max-height: 200px;"></canvas>
     </div>
 
-    <!-- Full results table -->
-    <div class="card reveal" style="overflow-x: auto; margin-top: 28px;">
+  </div>
+</section>
+
+<!-- SLIDE: Threshold Optimisation · continued -->
+<section id="threshold-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Threshold Optimisation</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>All Thresholds — Full Results Table</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="card reveal" style="overflow-x: auto; margin-top: 8px;">
       <h3 style="margin-bottom: 16px;">All Thresholds — Full Results</h3>
       <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <thead>
@@ -1414,25 +1584,11 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION - BUSINESS IMPACT                                             -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="impact" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="impact">
   <div class="container">
     <div class="label reveal">Business Impact</div>
     <h2 class="reveal">What Model Choice Means in Dollars</h2>
     <div class="divider reveal"></div>
-
-    <div class="reveal" style="
-      border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
-    ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">Bottom Line</p>
-      <p class="slide-statement" style="margin: 0;">Choosing the right model prevents up to $39,000 in fraud losses — on this test set alone.</p>
-      <blockquote style="margin: 0;">
-        Scale that to millions of real transactions —
-        <strong>and the gap between a good model and a bad one becomes enormous.</strong>
-      </blockquote>
-    </div>
 
     <div class="stat-row reveal">
       <div class="stat-box">
@@ -1456,14 +1612,14 @@
     <!-- Impact chart -->
     <div class="chart-wrap reveal">
       <h3 style="margin-bottom: 4px;">Estimated Fraud Loss — Per Model</h3>
-      <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 16px;">Missed fraud cases &times; $518 average transaction value</p>
-      <canvas id="chartImpact"></canvas>
+      <p style="font-size: 12px; color: var(--muted-dark); margin-bottom: 8px;">Missed fraud cases &times; $518 average transaction value</p>
+      <canvas id="chartImpact" style="max-height: 150px;"></canvas>
     </div>
 
-    <div class="grid-2" style="margin-top: 24px;">
+    <div class="grid-2" style="margin-top: 8px;">
       <div class="card reveal">
         <h3 style="color: var(--coral);">The Cost of the Wrong Model</h3>
-        <p style="font-size: 14px; color: var(--muted); margin-top: 8px;">
+        <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">
           Logistic Regression misses <span class="highlight">119 fraud cases</span> —
           an estimated loss of <span class="highlight">$61,650</span> on this test set.
           It also raises 641 false alarms. The worst of both worlds.
@@ -1471,7 +1627,7 @@
       </div>
       <div class="card reveal">
         <h3 style="color: var(--green);">Why We Deployed LightGBM, Not XGBoost</h3>
-        <p style="font-size: 14px; color: var(--muted); margin-top: 8px;">
+        <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">
           XGBoost catches <span class="highlight-green">13 more fraud cases</span> (~$6,700 extra saved)
           but raises <strong>47 false alarms</strong>. LightGBM catches 299 cases
           with only <span class="highlight-green">24 false alarms</span> — the best overall balance
@@ -1485,7 +1641,7 @@
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <!--  SECTION 10 - TAKEAWAYS                                                -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
-<section id="takeaways" style="min-height: auto; padding-top: 100px; padding-bottom: 80px;">
+<section id="takeaways">
   <div class="container">
     <div class="label reveal">Key Takeaways</div>
     <h2 class="reveal">Five Things to Remember</h2>
@@ -1493,57 +1649,70 @@
 
     <div class="reveal" style="
       border-left: 3px solid var(--burgundy-lt);
-      padding-left: 24px;
-      display: flex; flex-direction: column; gap: 18px;
-      margin-bottom: 32px;
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
     ">
-      <p style="font-size: 14px; color: var(--muted); margin: 0;">The Bottom Line</p>
-      <p class="slide-statement" style="margin: 0;">Good machine learning is not about the algorithm. It's about the decisions made before and after it.</p>
+      <p class="slide-statement" style="margin: 0;">Good ML is not about the algorithm. It's about the decisions made before and after it.</p>
       <blockquote style="margin: 0;">
         The right features, the right metric, the right evaluation —
         <strong>those choices matter more than which model you pick.</strong>
       </blockquote>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
 
-      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start;">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--coral); flex-shrink: 0;">1</div>
+      <div class="card reveal" style="display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--coral); flex-shrink: 0;">1</div>
         <div>
-          <h3 style="margin-bottom: 6px;">Accuracy is meaningless on imbalanced data</h3>
-          <p style="font-size: 13px; color: var(--muted);">When 99.5% of your data is one class, any model that ignores the minority looks great. Always evaluate with Recall, F1, and ROC-AUC when classes are unbalanced.</p>
+          <h3 style="margin-bottom: 4px;">Accuracy is meaningless on imbalanced data</h3>
+          <p style="font-size: 12px; color: var(--muted);">When 99.5% of your data is one class, any model that ignores the minority looks great. Always evaluate with Recall, F1, and ROC-AUC when classes are unbalanced.</p>
         </div>
       </div>
 
-      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start;">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--coral); flex-shrink: 0;">2</div>
+      <div class="card reveal" style="display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--coral); flex-shrink: 0;">2</div>
         <div>
-          <h3 style="margin-bottom: 6px;">Feature engineering matters as much as model choice</h3>
-          <p style="font-size: 13px; color: var(--muted);">Hour, distance, age, and log amount — features we built from scratch — ranked among the top predictors. A well-crafted feature beats a fancier algorithm on poor features every time.</p>
+          <h3 style="margin-bottom: 4px;">Feature engineering matters as much as model choice</h3>
+          <p style="font-size: 12px; color: var(--muted);">Hour, distance, age, and log amount — features we built from scratch — ranked among the top predictors. A well-crafted feature beats a fancier algorithm every time.</p>
         </div>
       </div>
 
-      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start;">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--coral); flex-shrink: 0;">3</div>
+      <div class="card reveal" style="display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--coral); flex-shrink: 0;">3</div>
         <div>
-          <h3 style="margin-bottom: 6px;">Gradient boosting dominates tabular fraud detection</h3>
-          <p style="font-size: 13px; color: var(--muted);">XGBoost and LightGBM outperformed every simpler model by a clear margin. Each tree in the sequence learns from the previous one's mistakes — that iterative focus is what captures subtle multi-feature fraud patterns.</p>
+          <h3 style="margin-bottom: 4px;">Gradient boosting dominates tabular fraud detection</h3>
+          <p style="font-size: 12px; color: var(--muted);">XGBoost and LightGBM outperformed every simpler model by a clear margin. Each tree learns from the previous one's mistakes — that iterative focus captures subtle fraud patterns.</p>
         </div>
       </div>
 
-      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start;">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--coral); flex-shrink: 0;">4</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE: Key Takeaways · continued -->
+<section id="takeaways-b">
+  <div class="container">
+    <div class="cont-header reveal">
+      <div class="cont-crumb"><span class="cont-crumb-label">Key Takeaways</span><span class="cont-crumb-badge">&middot; continued</span></div>
+      <h2>The Final Two Lessons</h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+      <div class="card reveal" style="display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, rgba(94,0,45,0.6), rgba(255,75,80,0.3)); border: 1px solid rgba(255,75,80,0.35); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--coral); flex-shrink: 0;">4</div>
         <div>
-          <h3 style="margin-bottom: 6px;">Data leakage is the most dangerous silent mistake</h3>
-          <p style="font-size: 13px; color: var(--muted);">SMOTE only on training data. Scaler fitted only on training data. Apply these to all data first and your metrics look better in the notebook — then fall apart in production. We were careful to avoid it.</p>
+          <h3 style="margin-bottom: 4px;">Data leakage is the most dangerous silent mistake</h3>
+          <p style="font-size: 12px; color: var(--muted);">SMOTE only on training data. Scaler fitted only on training data. Apply these to all data first and your metrics look better in the notebook — then fall apart in production. We were careful to avoid it.</p>
         </div>
       </div>
 
-      <div class="card reveal" style="display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start; border-color: rgba(255,75,80,0.3);">
-        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,75,80,0.4), rgba(94,0,45,0.6)); border: 1px solid rgba(255,75,80,0.5); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--coral); flex-shrink: 0;">5</div>
+      <div class="card reveal" style="display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; border-color: rgba(255,75,80,0.3);">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,75,80,0.4), rgba(94,0,45,0.6)); border: 1px solid rgba(255,75,80,0.5); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--coral); flex-shrink: 0;">5</div>
         <div>
-          <h3 style="margin-bottom: 6px; color: var(--coral);">Model selection is a business decision, not a technical one</h3>
-          <p style="font-size: 13px; color: var(--muted);">The difference between our best and worst model is approximately $39,000 in prevented fraud on this test set. Scale that to millions of transactions and the stakes are enormous. The people choosing the model need to understand what Recall actually means.</p>
+          <h3 style="margin-bottom: 4px; color: var(--coral);">Model selection is a business decision, not a technical one</h3>
+          <p style="font-size: 12px; color: var(--muted);">The difference between best and worst model is ~$39,000 in prevented fraud on this test set. Scale to millions of transactions — the stakes are enormous. Decision-makers need to understand what Recall actually means.</p>
         </div>
       </div>
 
@@ -1616,11 +1785,28 @@
 <!--  SCRIPTS                                                                -->
 <!-- ════════════════════════════════════════════════════════════════════════ -->
 <script>
-// ── Scroll reveal ───────────────────────────────────────────────────────
+// ── Scroll reveal (body is scroll root) ────────────────────────────────
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.12 });
+}, { root: null, threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Nav clicks: scroll body to section ─────────────────────────────────
+document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// ── Hero CTA ────────────────────────────────────────────────────────────
+const heroCta = document.querySelector('.hero-cta[href^="#"]');
+if (heroCta) heroCta.addEventListener('click', function(e) {
+  e.preventDefault();
+  const target = document.querySelector(this.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+});
 
 // ── Active nav link ─────────────────────────────────────────────────────
 const sections = document.querySelectorAll('section');
@@ -1633,8 +1819,45 @@ const navObserver = new IntersectionObserver((entries) => {
       if (link) link.classList.add('active');
     }
   });
-}, { threshold: 0.3 });
+}, { threshold: 0.5 });
 sections.forEach(s => navObserver.observe(s));
+
+// ── Keyboard navigation (← → ↑ ↓ PageUp/Down, Space) ───────────────────
+const sectionList = Array.from(sections);
+let currentIdx = 0;
+function goToSlide(idx) {
+  idx = Math.max(0, Math.min(sectionList.length - 1, idx));
+  currentIdx = idx;
+  sectionList[idx].scrollIntoView({ behavior: 'smooth' });
+}
+document.addEventListener('keydown', function(e) {
+  if (['ArrowDown','ArrowRight','PageDown','Space'].includes(e.code)) {
+    e.preventDefault(); goToSlide(currentIdx + 1);
+  } else if (['ArrowUp','ArrowLeft','PageUp'].includes(e.code)) {
+    e.preventDefault(); goToSlide(currentIdx - 1);
+  }
+});
+// Track current slide from scroll
+const slideTracker = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) currentIdx = sectionList.indexOf(entry.target);
+  });
+}, { threshold: 0.5 });
+sectionList.forEach(s => slideTracker.observe(s));
+
+// ── Slide counter ────────────────────────────────────────────────────────
+const counter = document.createElement('div');
+counter.id = 'slide-counter';
+counter.style.cssText = 'position:fixed;bottom:16px;right:20px;z-index:200;font-size:11px;color:rgba(184,168,176,0.55);font-weight:600;letter-spacing:1px;pointer-events:none;';
+document.body.appendChild(counter);
+function updateCounter() { counter.textContent = (currentIdx + 1) + ' / ' + sectionList.length; }
+updateCounter();
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { currentIdx = sectionList.indexOf(entry.target); updateCounter(); }
+  });
+}, { threshold: 0.5 });
+sectionList.forEach(s => counterObserver.observe(s));
 
 // ── Chart defaults (RSU warm palette) ───────────────────────────────────
 Chart.defaults.color = '#8a7a82';
