@@ -27,17 +27,15 @@ final_work/
 
 ### ✅ STEP 1 — Data Loading & Initial Inspection (`data_collection.ipynb`)
 
-**Status:** Done ✔️
+**Status:** Done ✔️ — all items covered in `ML_work_and_analysis.ipynb` Section 1 (`data_collection.ipynb` not created as a separate file — not required)
 
 - [x] Download dataset via `kagglehub`
 - [x] Load `credit_card_frauds.csv` into `df` (pandas DataFrame)
 - [x] Print shape and preview with `df.head()`
-
-**What still needs to be done here:**
-- [ ] Print `df.info()` — column names, dtypes, non-null counts
-- [ ] Print `df.describe()` — summary statistics
-- [ ] Check for missing values: `df.isnull().sum()`
-- [ ] Check target column name and value counts: `df['target_col'].value_counts()`
+- [x] Print `df.info()` — column names, dtypes, non-null counts
+- [x] Print `df.describe()` — summary statistics
+- [x] Check for missing values: `df.isnull().sum()`
+- [x] Check target column name and value counts: `df['is_fraud'].value_counts()` — 0.52% fraud confirmed
 
 ---
 
@@ -46,35 +44,33 @@ final_work/
 **Notebook:** `ML_work_and_analysis.ipynb`
 
 #### 2.1 Basic Summary
-- [ ] `df.shape`, `df.dtypes`, `df.describe()`, `df.info()`
-- [ ] Missing value heatmap or bar chart
-- [ ] Target class distribution bar chart — check for class imbalance (fraud datasets are usually ~0.1–2% fraud)
+- [x] `df.shape`, `df.dtypes`, `df.describe()`, `df.info()`
+- [x] Missing value heatmap or bar chart
+- [x] Target class distribution bar chart — 0.52% fraud (1,761 of 339,607)
 
 #### 2.2 Required Visualisations (minimum per rubric)
-- [ ] **Histogram / KDE plots** for each numerical feature, coloured by target class
-- [ ] **Correlation heatmap** — `sns.heatmap(df.corr(), annot=True)`
-- [ ] **Bar charts** for categorical feature distributions
-- [ ] **Box plots or Violin plots** for at least 3–4 features (to show spread & outliers)
+- [x] **Histogram / KDE plots** for each numerical feature, coloured by target class
+- [x] **Correlation heatmap** — Section 2.7
+- [x] **Bar charts** for categorical feature distributions — Section 2.4 (merchant category), Section 2.2 (hour/day)
+- [x] **Box plots or Violin plots** for at least 3–4 features — Section 2.6
+- [x] *(bonus)* **Temporal fraud patterns** — fraud rate by hour and day of week (Section 2.2, added by Jolanta)
+- [x] *(bonus)* **Precision-Recall curves** — all 5 models (Section 6, added by Jolanta)
 
 #### 2.3 Class Imbalance Strategy
-- Credit card fraud is highly imbalanced. Choose one:
-  - [ ] **SMOTE** (oversampling minority class) — `from imblearn.over_sampling import SMOTE`
-  - [ ] **Undersampling** majority class
-  - [ ] **Class weights** — `class_weight='balanced'` in sklearn models
-- Document and justify the choice in a markdown cell.
+- Credit card fraud is highly imbalanced. Chosen:
+  - [x] **SMOTE** applied to training set only — documented and justified in Section 4.3 markdown
+  - [ ] ~~Undersampling majority class~~
+  - [ ] ~~Class weights~~
 
 ---
 
-### 🔧 STEP 3 — Data Preprocessing & Feature Engineering
+### ✅ STEP 3 — Data Preprocessing & Feature Engineering
 
-- [ ] Identify categorical columns — apply **One-Hot Encoding** (`pd.get_dummies` or `OneHotEncoder`)
-- [ ] Identify numerical columns — apply **StandardScaler** or **MinMaxScaler** where needed
-  - Note in notebook: tree-based models (Decision Tree, Random Forest, XGBoost) **do NOT need scaling**; Logistic Regression **does**
-- [ ] Handle missing values:
-  - Numerical: impute with **mean** or **median**
-  - Categorical: impute with **mode** or add an "Unknown" category
-- [ ] (Optional) Feature engineering — e.g., transaction amount ratios, time-based binning
-- [ ] Drop irrelevant/ID columns (e.g., row IDs, timestamps if not useful)
+- [x] Identify categorical columns — One-Hot Encoding applied to `category` (14 values) and `state` (13 values) via `pd.get_dummies`
+- [x] Identify numerical columns — **StandardScaler** applied to numeric features for Logistic Regression; tree-based models use unscaled data. Noted in Section 3 markdown.
+- [x] Handle missing values — dataset has no missing values (confirmed in Section 1)
+- [x] Feature engineering — 6 new features created: `hour`, `day_of_week`, `month`, `age`, `distance_km` (Haversine), `log_amt` — documented in Section 3.2
+- [x] Drop irrelevant/ID columns — `merchant`, `city`, `trans_num`, `job`, `trans_date_trans_time`, `dob` dropped after extraction
 
 ---
 
@@ -91,10 +87,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-- [ ] **80% training / 20% test** split
-- [ ] Use `stratify=y` to maintain class distribution in both splits
-- [ ] Use `random_state=42` for reproducibility
-- [ ] ⚠️ **NEVER touch the test set until final evaluation** — all tuning happens on training data only
+- [x] **80% training / 20% test** split
+- [x] Use `stratify=y` to maintain class distribution in both splits
+- [x] Use `random_state=42` for reproducibility
+- [x] ⚠️ Test set untouched during tuning — SMOTE and scaler fitted on training data only
 
 ---
 
@@ -129,7 +125,7 @@ grid.fit(X_train, y_train)
 print(grid.best_params_)
 ```
 
-- [ ] Save best hyperparameters for each model in a **summary table** (markdown or DataFrame)
+- [x] Best hyperparameters saved — printed per model and summarised in Section 5 markdown cells
 
 ---
 
@@ -138,16 +134,19 @@ print(grid.best_params_)
 After tuning, retrain each best model on full `X_train`, then evaluate on `X_test`.
 
 #### Metrics to Compute for Each Model
-- [ ] **Accuracy**
-- [ ] **Precision, Recall, F1-Score** — `classification_report(y_test, y_pred)`
-- [ ] **ROC-AUC** — `roc_auc_score(y_test, y_proba)`
-- [ ] **Confusion Matrix** — visualised as heatmap
+- [x] **Accuracy**
+- [x] **Precision, Recall, F1-Score** — `classification_report` for all 5 models
+- [x] **ROC-AUC** — computed for all 5 models
+- [x] **Confusion Matrix** — heatmaps for best and worst model
 
 #### Required Visualisations
-1. [ ] **Grouped bar chart** — Accuracy, F1, ROC-AUC for all models side-by-side
-2. [ ] **ROC curves** — all models on the same axes, with AUC in the legend
-3. [ ] **Summary comparison table** — all metrics in one DataFrame
-4. [ ] **Confusion matrix heatmaps** — at minimum for best and worst model
+1. [x] **Grouped bar chart** — Accuracy, F1, ROC-AUC for all 5 models
+2. [x] **ROC curves** — all 5 models on same axes with AUC in legend
+3. [x] **Summary comparison table** — styled DataFrame with colour gradient
+4. [x] **Confusion matrix heatmaps** — best and worst model
+5. [x] *(bonus)* **Precision-Recall curves** — all models with random baseline
+6. [x] *(bonus)* **Business impact table** — fraud caught/missed, estimated dollar losses per model
+7. [x] *(bonus)* **Threshold optimisation chart** — Precision/Recall/F1 vs threshold (0.1–0.7)
 
 ```python
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -160,44 +159,27 @@ plt.show()
 
 ---
 
-### 🔍 STEP 7 — Model Interpretation & Analysis
+### ✅ STEP 7 — Model Interpretation & Analysis
 
-- [ ] **Feature importance plot** from the best tree-based model (Random Forest or XGBoost)
-  ```python
-  importances = best_model.feature_importances_
-  # Plot as horizontal bar chart
-  ```
-- [ ] Discuss **why** the best model outperforms the others (complexity, regularisation, ensemble effect)
-- [ ] Connect findings to the domain: which features are most predictive of fraud?
-- [ ] ⭐ **(Optional bonus)** SHAP values:
-  ```python
-  import shap
-  explainer = shap.TreeExplainer(best_model)
-  shap_values = explainer.shap_values(X_test)
-  shap.summary_plot(shap_values, X_test)
-  ```
+- [x] **Feature importance plot** — top 25 features from best model + Random Forest comparison (Section 7)
+- [x] Discuss **why** the best model outperforms the others — Sections 8.2 and 8.3 (gradient boosting captures non-linear feature interactions)
+- [x] Connect findings to the domain — Section 7.1 table maps each key feature to fraud logic and EDA evidence
+- [ ] ⭐ **(Optional bonus)** SHAP values — **NOT implemented**; mentioned as future work in Section 8.4
 
 ---
 
-### 📝 STEP 8 — Notebook Formatting & Documentation
+### ⚠️ STEP 8 — Notebook Formatting & Documentation
 
-- [ ] Every section must have a **markdown header** explaining what is being done and why
-- [ ] Include a **Contribution Table** at the top or end:
-
-| Team Member | Sections Responsible |
-|-------------|----------------------|
-| Name 1 | EDA, Visualisations |
-| Name 2 | Preprocessing, Feature Engineering |
-| Name 3 | Model Training, Tuning |
-| Name 4 | Evaluation, Interpretation |
-| Name 5 | Presentation, Report |
-
-- [ ] Include a **References section** at the end with dataset source and any code references
-- [ ] Ensure notebook **runs end-to-end without errors** before submission
+- [x] Every section has a **markdown header** — all 8 sections fully written with beginner-friendly explanations (rewritten by Jolanta April 11)
+- [ ] ❌ **Contribution Table — MISSING** — must be added before submission (direct point loss)
+- [x] **References section** — Section 8.5 (dataset, SMOTE paper, sklearn/XGBoost/LightGBM docs)
+- [x] Notebook **runs end-to-end without errors** — confirmed (TODO April 12)
 
 ---
 
-### 📊 STEP 9 — Presentation (due 14.04, presented 16.04)
+### ✅ STEP 9 — Presentation (due 14.04, presented 16.04)
+
+**Status:** `PRESENTATION_README.md` created — 18-slide plan with speaker notes, beginner glossary for teammates, demo instructions, and pre-presentation checklist.
 
 Recommended slide structure (10–15 min):
 

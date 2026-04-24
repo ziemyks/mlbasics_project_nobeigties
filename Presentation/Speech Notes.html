@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentation Speech — Fraud Detection</title>
+  <style>
+    :root {
+      --bg:          #0d0810;
+      --surface:     #180d14;
+      --card:        #1e1018;
+      --burgundy:    #5e002d;
+      --coral:       #ff4b50;
+      --coral-soft:  #ff7b7e;
+      --cream:       #e8dde4;
+      --muted:       #8a7a82;
+      --muted-dark:  #5a4a52;
+      --border:      rgba(138,122,130,0.18);
+      --slide-bg:    rgba(94,0,45,0.12);
+      --slide-border:rgba(255,75,80,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 17px;
+      line-height: 1.75;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 210px;
+      min-width: 210px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #sidebar .nav-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--muted-dark);
+      text-transform: uppercase;
+      padding: 0 18px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    #sidebar a {
+      display: block;
+      padding: 7px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #sidebar a:hover,
+    #sidebar a.active {
+      color: var(--coral);
+      border-left-color: var(--coral);
+      background: rgba(255,75,80,0.06);
+    }
+    #sidebar .qa-link {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+    }
+
+    /* ── Main ── */
+    #main {
+      flex: 1;
+      max-width: 820px;
+      padding: 48px 56px 80px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 10px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .note-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: rgba(94,0,45,0.15);
+      border: 1px solid rgba(255,75,80,0.2);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Section ── */
+    .slide-section {
+      margin-bottom: 52px;
+      scroll-margin-top: 32px;
+    }
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--slide-bg);
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--coral);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .slide-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Typography ── */
+    .slide-section p { margin-bottom: 14px; color: #cfc4c9; }
+    .slide-section p:last-child { margin-bottom: 0; }
+    strong { color: var(--cream); font-weight: 600; }
+
+    .sub-heading {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--coral-soft);
+      margin: 20px 0 6px;
+      letter-spacing: 0.03em;
+    }
+    .stage {
+      display: block;
+      font-style: italic;
+      color: var(--muted-dark);
+      font-size: 14px;
+      margin: 10px 0;
+    }
+    code {
+      background: rgba(255,75,80,0.1);
+      border: 1px solid rgba(255,75,80,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 14px;
+      color: var(--coral-soft);
+    }
+    .key-number {
+      background: rgba(255,75,80,0.08);
+      border: 1px solid rgba(255,75,80,0.25);
+      border-radius: 6px;
+      padding: 2px 8px;
+      color: var(--coral);
+      font-weight: 700;
+    }
+    .slide-section ul,
+    .slide-section ol {
+      margin: 8px 0 14px 20px;
+      color: #cfc4c9;
+    }
+    .slide-section li { margin-bottom: 6px; }
+
+    /* inline sub-section divider */
+    .inner-divider {
+      border: none;
+      border-top: 1px dashed var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Q&A ── */
+    #qa {
+      scroll-margin-top: 32px;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 2px solid var(--border);
+    }
+    #qa h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .qa-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .qa-q {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--coral-soft);
+      margin-bottom: 10px;
+    }
+    .qa-a {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--muted-dark); border-radius: 3px; }
+
+    @media (max-width: 700px) {
+      #sidebar { display: none; }
+      #main { padding: 24px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ SIDEBAR ══ -->
+<nav id="sidebar">
+  <div class="nav-title">Slide Navigation</div>
+  <a href="#s-home">Home — Title</a>
+  <a href="#s-problem">Problem</a>
+  <a href="#s-dataset">Dataset</a>
+  <a href="#s-findings">Findings</a>
+  <a href="#s-features">Features</a>
+  <a href="#s-datasplit">Data Split</a>
+  <a href="#s-models">Models</a>
+  <a href="#s-results">Results</a>
+  <a href="#s-impact">Impact</a>
+  <a href="#s-takeaways">Takeaways</a>
+  <a href="#s-demo">Demo</a>
+  <a href="#qa" class="qa-link">Q&amp;A Cheat Sheet</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════ MAIN ══ -->
+<main id="main">
+
+  <div class="page-header">
+    <h1>Presentation Speech — Credit Card Fraud Detection</h1>
+    <div class="meta-row">
+      <span>Course: Basics of AI and Machine Learning — Final Group Project</span>
+      <span>Date: 16 April 2026</span>
+      <span>~12–15 min</span>
+    </div>
+    <div class="note-box">
+      <strong>Note:</strong> Speak naturally — these are talking points, not a script to read word for word.
+    </div>
+  </div>
+
+  <!-- ══ HOME ══ -->
+  <section class="slide-section" id="s-home">
+    <div class="slide-tag">Home — Title Slide</div>
+    <div class="slide-title">Opening</div>
+
+    <p>Good afternoon, everyone. My name is Jolanta, and today I'll be presenting our final project — <strong>Credit Card Fraud Detection using Machine Learning</strong>.</p>
+
+    <p>What we built is a full end-to-end machine learning pipeline. That means we started with raw transaction data — just numbers in a spreadsheet — and ended up with a trained model that can tell you, in milliseconds, whether a transaction looks fraudulent or not. My colleague will show you that model running live in a moment. But first, let me walk you through how we got there, and why the decisions we made along the way actually matter.</p>
+  </section>
+
+  <!-- ══ PROBLEM ══ -->
+  <section class="slide-section" id="s-problem">
+    <div class="slide-tag">Problem</div>
+    <div class="slide-title">Why Fraud Detection Is Hard</div>
+
+    <p>Let me start with the problem we were solving.</p>
+
+    <p>The project is built around a realistic business scenario. A new credit card company has just launched in the western United States. They're marketing themselves as one of the safest cards available — and their reputation depends entirely on one thing: catching fraud before it costs their customers money.</p>
+
+    <span class="sub-heading">The brief.</span>
+    <p>Our main goal: catch as much fraud as possible, before the customer loses money. The instruction we were given was: <strong>when in doubt, stop the transaction</strong>. A blocked card can be unblocked in minutes. Money stolen is gone.</p>
+
+    <span class="sub-heading">The accuracy trap.</span>
+    <p>Before we even looked at a single model, we ran into a fundamental problem. Only <strong>0.52% of all transactions in the dataset are fraud</strong>. That's 1,782 fraud cases out of nearly 340,000 transactions.</p>
+
+    <p>If you built the laziest possible model — one that always says "not fraud" — that model would be <strong>99.5% accurate</strong>. Sounds impressive. But it catches absolutely zero fraud. Every single criminal walks away.</p>
+
+    <p>So accuracy is completely misleading here. We needed different metrics — ones that focus specifically on what happens to the fraud cases, not just the overall score.</p>
+
+    <span class="sub-heading">Two types of mistakes.</span>
+    <p>In fraud detection, there are two ways the model can be wrong.</p>
+    <p>The first: the model blocks a real, legitimate purchase by mistake. The customer is annoyed, calls the bank, card is unblocked in minutes. Inconvenient — but fixable.</p>
+    <p>The second: the model misses actual fraud. The criminal goes through. The customer loses money. The bank pays the chargeback. Trust is damaged — and that money is gone.</p>
+    <p>These two mistakes are not equal. One costs a phone call. The other costs real money and real trust. And that asymmetry shaped every decision we made.</p>
+  </section>
+
+  <!-- ══ DATASET ══ -->
+  <section class="slide-section" id="s-dataset">
+    <div class="slide-tag">Dataset</div>
+    <div class="slide-title">The Data</div>
+
+    <p>We used a Kaggle dataset of <strong>339,607 credit card transactions</strong> from the western United States. Each row represents one purchase — 15 columns covering who the cardholder is, their date of birth, home address and coordinates, the merchant's name and location, the purchase category, transaction amount, and a precise timestamp. Plus one more: <strong>is_fraud</strong> — a 1 or 0 telling us whether the transaction was later confirmed as fraud.</p>
+
+    <p>So the data is rich. Geography, timing, amounts, categories, demographics. Everything a fraud analyst would want.</p>
+
+    <p>Now here's where it gets difficult. Out of those 339,607 transactions, only <strong>1,761 are fraud</strong>. That's <strong>0.52%</strong>. Not even one percent.</p>
+
+    <span class="stage">[gesture toward the charts]</span>
+
+    <p>The bar chart shows this — the fraud bar is barely a sliver next to 337,825 legitimate transactions. The pie: 99.48% legitimate, 0.52% fraud.</p>
+
+    <p>A way to make the scale concrete: imagine you're screening people at an airport. For every 200 passengers, one is carrying something they shouldn't. The other 199 are completely innocent. Your job is to find that one person without holding up the other 199 for too long.</p>
+
+    <p><strong>A model that always says "not fraud" would score 99.5% accuracy</strong> — and catch zero fraud. Not one criminal stopped.</p>
+
+    <p>That imbalance doesn't just affect how we measure things — it shapes every decision that follows: how we train the model, how we balance the data before training, and which metrics we use. Everything you'll see next flows from this single fact.</p>
+  </section>
+
+  <!-- ══ FINDINGS ══ -->
+  <section class="slide-section" id="s-findings">
+    <div class="slide-tag">Findings</div>
+    <div class="slide-title">EDA Highlights — What Fraud Looks Like</div>
+
+    <p>Before we touched any models, we spent time just looking at the data. This stage is called <strong>Exploratory Data Analysis</strong> — EDA for short. The goal: understand what fraud actually looks like before you try to teach a machine to detect it.</p>
+
+    <p>We found four patterns — a fingerprint: <strong>hour, amount, distance, category</strong>.</p>
+
+    <span class="sub-heading">1. Timing.</span>
+    <p>Fraud peaks sharply between <strong>1 and 4 in the morning</strong>. If someone steals your card details, they want to use them while you're asleep and not checking your bank app.</p>
+
+    <span class="sub-heading">2. Amounts.</span>
+    <p>The average fraudulent transaction is <span class="key-number">$518</span>. The average legitimate transaction is <span class="key-number">~$70</span>. Nearly eight-to-one. Criminals go for bigger purchases — they're not buying coffee.</p>
+
+    <span class="sub-heading">3. Categories.</span>
+    <p>The highest fraud rates were in online categories — online shopping, online miscellaneous. Online purchases don't require the physical card, so stolen card numbers are easy to use. No cashier, no signature, no chip to read.</p>
+
+    <span class="sub-heading">4. Geography.</span>
+    <p>We calculated the distance between the cardholder's home and the merchant. Fraudulent transactions happen much further away — a purchase thousands of kilometres from a card registered in California is a very suspicious signal. Distance ended up as the <strong>third most important feature</strong> in the final model — behind transaction amount and cardholder age, both of which also ranked extremely high.</p>
+
+    <p>None of these patterns prove fraud on their own. But together, they paint a picture. And every single one translated directly into a feature we engineered in the next step.</p>
+  </section>
+
+  <!-- ══ FEATURES ══ -->
+  <section class="slide-section" id="s-features">
+    <div class="slide-tag">Features</div>
+    <div class="slide-title">Feature Engineering</div>
+
+    <p>This is probably the part of the project I'm most proud of — it's where domain knowledge and engineering work together.</p>
+
+    <p>The raw dataset gave us things like a timestamp and latitude/longitude coordinates. You can't feed a timestamp into a model and expect it to learn anything useful. Models need numbers. So we transformed the raw data into something the model could actually reason about.</p>
+
+    <p>We created <strong>6 new features</strong>:</p>
+
+    <ul>
+      <li><code>hour</code>, <code>day_of_week</code>, <code>month</code> — from the timestamp. Without <code>hour</code>, the model never sees the 3 AM pattern — the raw timestamp is just a string.</li>
+      <li><code>age</code> — calculated from the cardholder's date of birth. Fraud rates vary significantly across age groups.</li>
+      <li><code>distance_km</code> — straight-line distance between the cardholder's home and the merchant, using the <strong>Haversine formula</strong>. A large distance is a strong red flag — it ranked #3 in feature importance, behind only amt and age.</li>
+      <li><code>log_amt</code> — the natural log of the transaction amount. Amounts range from under $1 to over $28,000. The log compresses this into a manageable range and reduces the effect of extreme outliers.</li>
+    </ul>
+
+    <p>We also one-hot encoded categories (14 values) and states (13) — converting them into binary yes/no columns the model can process. And we dropped columns with no predictive value: merchant name, job title, city, transaction ID.</p>
+
+    <p>The result: <strong>15 raw columns became 39 engineered features</strong>. Four of our hand-crafted features ranked in the top predictors. The model learned what we taught it to look for.</p>
+  </section>
+
+  <!-- ══ DATA SPLIT ══ -->
+  <section class="slide-section" id="s-datasplit">
+    <div class="slide-tag">Data Split</div>
+    <div class="slide-title">Data Preparation — Three Critical Steps</div>
+
+    <p>Before any model sees the data, three steps have to happen — getting these wrong is one of the most common ways to produce results that look great in a notebook but fail in production.</p>
+
+    <span class="sub-heading">Step 1: Train-test split.</span>
+    <p>80% for training, 20% for testing. The test set is locked away and never touched until the very end — it's the real exam. We used <code>stratify=y</code> to preserve the same fraud ratio in both sets, and <code>random_state=42</code> for reproducibility.</p>
+
+    <span class="sub-heading">Step 2: Feature scaling.</span>
+    <p>We applied <strong>StandardScaler</strong> to numeric features — rescaling to mean zero, standard deviation one. Without this, a feature ranging from 0 to 28,000 dominates a feature ranging from 18 to 90 just because of scale, not predictive value.</p>
+
+    <p>Critically: we fitted the scaler <strong>only on the training data</strong>, then applied it to both sets. Fitting on all data at once leaks test set information into the training process — that's called <strong>data leakage</strong>, and it makes metrics look better than they really are.</p>
+
+    <span class="sub-heading">Step 3: SMOTE.</span>
+    <p><strong>Synthetic Minority Over-sampling Technique</strong>. With a 0.52% fraud rate, a model trained on raw data learns that "not fraud" is almost always right — it barely sees enough fraud examples to learn what fraud looks like.</p>
+
+    <p>SMOTE creates <strong>synthetic fraud examples</strong> by interpolating between real fraud cases and their nearest neighbours. After SMOTE, our training set was balanced at 50/50.</p>
+
+    <p>The golden rule: SMOTE <strong>only on the training set</strong>. The test set stays untouched — it needs to reflect the real-world distribution we're trying to predict.</p>
+  </section>
+
+  <!-- ══ MODELS ══ -->
+  <section class="slide-section" id="s-models">
+    <div class="slide-tag">Models</div>
+    <div class="slide-title">Five Models — Simple to Complex</div>
+
+    <p>We trained five models, deliberately starting simple and increasing in complexity. You establish a baseline first, then you know exactly how much improvement each step buys you.</p>
+
+    <span class="sub-heading">Model 1: Logistic Regression</span>
+    <p>Our baseline. Draws a single straight-line boundary between fraud and not-fraud. Fast, interpretable, easy to explain. But it can't capture combinations like "high amount AND night-time AND far away." Either/or thinking.</p>
+
+    <span class="sub-heading">Model 2: Decision Tree</span>
+    <p>Learns a series of yes/no questions — "Is the amount over $500? Is the hour after midnight?" Can capture non-linear interactions. But a single tree tends to <strong>overfit</strong> — it memorises training data, including the noise, and doesn't generalise to new transactions.</p>
+
+    <span class="sub-heading">Model 3: Random Forest</span>
+    <p>The answer to overfitting. Hundreds of trees, each on a random subset of data and features, then vote. Think crowd wisdom — a crowd of 500 people with slightly different information is more reliable than any single expert.</p>
+
+    <span class="sub-heading">Model 4: XGBoost — Extreme Gradient Boosting</span>
+    <p>Sequential trees, not parallel. Each new tree specifically corrects the mistakes of the previous ones. Like a team of editors where each person only fixes what the previous person got wrong. Iterative, focused, powerful.</p>
+
+    <span class="sub-heading">Model 5: LightGBM — Light Gradient Boosting Machine ★ Deployed</span>
+    <p>Developed by Microsoft. Same sequential boosting as XGBoost but engineered for speed on large datasets. Chosen for deployment — not because it catches the absolute most fraud, but because it catches nearly as much as XGBoost <strong>while producing far fewer false alarms</strong>: <span class="key-number">24 false positives</span> vs <span class="key-number">47 for XGBoost</span>. Fewer legitimate customers blocked unnecessarily.</p>
+
+    <hr class="inner-divider">
+
+    <p>Every model was tuned with <strong>5-fold cross-validation</strong> — training data split into 5 parts, train on 4, validate on 1, rotate through all 5, average the results. We optimised on <strong>F1-Score</strong>, which balances Recall and Precision.</p>
+
+    <p>We measured three things: <strong>Recall</strong> (what share of actual fraud did we catch?), <strong>F1-Score</strong> (balance between catching fraud and not over-flagging), and <strong>ROC-AUC</strong> (how well does the model separate fraud from legitimate overall?).</p>
+  </section>
+
+  <!-- ══ RESULTS ══ -->
+  <section class="slide-section" id="s-results">
+    <div class="slide-tag">Results</div>
+    <div class="slide-title">What the Numbers Show</div>
+
+    <p>The metrics are defined on the Models slide. Let me go straight to what the numbers show — all from the held-out test set, data none of the models ever saw during training.</p>
+
+    <span class="stage">[point to the comparison table]</span>
+
+    <p>Look at Accuracy first. It barely moves — 98.9% to 99.9% across all five models. Useless. Every model looks "accurate" because the dataset is 99.5% legitimate transactions.</p>
+
+    <p>Now look at Recall and F1. <strong>That's</strong> where you see the real differences.</p>
+
+    <ul>
+      <li><strong>Logistic Regression</strong> — Recall 0.6657. Misses about one in three fraud cases. F1 of 0.38. Not good enough.</li>
+      <li><strong>Random Forest</strong> — Recall 0.70, F1 0.77. A significant step up.</li>
+      <li><strong>XGBoost</strong> — Recall <span class="key-number">0.8764</span>. Catches 312 of 356 fraud cases. 47 false positives.</li>
+      <li><strong>LightGBM</strong> — Recall <span class="key-number">0.8399</span>. Catches 299 cases. Precision 0.9257 — only 24 false positives.</li>
+    </ul>
+
+    <p>Both gradient boosting models are excellent. XGBoost catches slightly more fraud. LightGBM blocks fewer innocent customers.</p>
+
+    <hr class="inner-divider">
+
+    <span class="sub-heading">The charts — fraud caught vs. missed.</span>
+    <p>The bar chart makes the raw difference visual. Look at the False Negatives — real fraud that slipped through.</p>
+
+    <ul>
+      <li>Logistic Regression: <strong>119 missed</strong></li>
+      <li>Decision Tree: 82 missed</li>
+      <li>Random Forest: 106 missed</li>
+      <li>XGBoost: <strong>44 missed</strong></li>
+      <li>LightGBM: <strong>57 missed</strong></li>
+    </ul>
+
+    <p>That's 75 fraud cases that either got caught or didn't, depending purely on which model we chose.</p>
+
+    <hr class="inner-divider">
+
+    <span class="sub-heading">ROC and Precision-Recall curves.</span>
+    <p>The <strong>ROC curve</strong> plots True Positive Rate against False Positive Rate at every threshold. All our models score above 0.87 AUC — but ROC-AUC can be misleading on imbalanced data because the huge number of legitimate transactions inflates the True Negative Rate.</p>
+
+    <p>That's why we also look at the <strong>Precision-Recall curve</strong>. It only cares about the fraud class — ignores the easy cases completely. Here you clearly see the gradient boosting models pulling away. This is the honest picture.</p>
+  </section>
+
+  <!-- ══ IMPACT ══ -->
+  <section class="slide-section" id="s-impact">
+    <div class="slide-tag">Impact</div>
+    <div class="slide-title">Business Impact — Translate to Dollars</div>
+
+    <p>Let me translate those numbers into something concrete.</p>
+
+    <p>The <strong>average fraudulent transaction</strong> in our dataset is <span class="key-number">$518.07</span>. That's the average amount a fraudster spends when they get through.</p>
+
+    <p>XGBoost and LightGBM caught between 299 and 312 of the 356 fraud cases. Logistic Regression caught only 237. The difference: <strong>62 to 75 fraud cases</strong>. Multiply by $518 — choosing the right model <strong>prevents approximately $32,000 to $39,000 in fraud losses</strong> on this test set alone.</p>
+
+    <p>Now scale that up. A real credit card company processes millions of transactions every year. The financial difference between a well-chosen model and a naive one isn't thousands of dollars — it's potentially millions. And beyond the money: customer trust, regulatory compliance, brand reputation.</p>
+
+    <p><strong>Model selection is not a technical exercise. It is a business decision.</strong></p>
+
+    <hr class="inner-divider">
+
+    <span class="sub-heading">Why LightGBM over XGBoost?</span>
+    <p>XGBoost catches the most fraud — 312 cases. If the business priority is pure fraud catch rate, XGBoost wins. But LightGBM catches 299 with only 24 false alarms versus XGBoost's 47. That's 23 fewer legitimate customers blocked per test set cycle. For a company marketing themselves on customer experience, that trade-off favours LightGBM. The model doesn't make that call — the business does.</p>
+
+    <hr class="inner-divider">
+
+    <span class="sub-heading">A note on thresholds.</span>
+    <p>The model outputs a probability — 0.73 meaning "73% confident this is fraud." We apply a threshold to convert it to yes/no. The default is 0.5, but that's arbitrary.</p>
+
+    <ul>
+      <li>Lower threshold → catch more fraud, more false alarms</li>
+      <li>Higher threshold → fewer false alarms, miss more fraud</li>
+      <li>Optimal for F1 was <strong>0.4</strong> — Recall 0.854, Precision 0.916, F1 0.884</li>
+    </ul>
+
+    <p>A bank that can't afford to miss a single case lowers the threshold. A bank prioritising customer experience raises it. Again — a business decision, not a technical one.</p>
+  </section>
+
+  <!-- ══ TAKEAWAYS ══ -->
+  <section class="slide-section" id="s-takeaways">
+    <div class="slide-tag">Takeaways</div>
+    <div class="slide-title">Five Things to Remember</div>
+
+    <p>I want to close with five things you should take away from this project. These are on screen — I'll walk through each one briefly.</p>
+
+    <span class="sub-heading">1 — Accuracy is meaningless on imbalanced data.</span>
+    <p>When 99.5% of your data is one class, any model that ignores the minority looks great. Accuracy told us nothing. Recall, F1, and ROC-AUC told us everything. If you ever work on a classification problem with unbalanced classes, this is the first thing to remember.</p>
+
+    <span class="sub-heading">2 — Feature engineering matters as much as model choice.</span>
+    <p>Hour, distance, age, log amount — features we built from scratch — ranked among the top predictors. We didn't find those patterns by trying more algorithms. We found them by understanding the problem first, then building the right numbers.</p>
+
+    <span class="sub-heading">3 — Gradient boosting dominates tabular fraud detection.</span>
+    <p>XGBoost and LightGBM outperformed every simpler model by a clear margin. Each tree in the sequence learns from the previous one's mistakes — that iterative focus captures subtle multi-feature fraud patterns that a single tree or a straight line never could.</p>
+
+    <span class="sub-heading">4 — Data leakage is the most dangerous silent mistake.</span>
+    <p>SMOTE only on training data. Scaler fitted only on training data. Apply these to all data first and your metrics look better in the notebook — then fall apart in production. That's exactly the kind of care that separates a working system from one that only works on paper.</p>
+
+    <span class="sub-heading">5 — Model selection is a business decision, not a technical one.</span>
+    <p>The difference between our best and worst model is approximately <span class="key-number">$39,000</span> in prevented fraud on this test set alone. Scale that to millions of real transactions and the stakes are enormous. The people choosing the model need to understand what Recall actually means — and why it matters more than accuracy.</p>
+
+    <p style="margin-top: 24px; font-size: 18px; font-weight: 700; color: var(--cream);">Thank you. We're happy to take questions.</p>
+  </section>
+
+  <!-- ══ DEMO ══ -->
+  <section class="slide-section" id="s-demo">
+    <div class="slide-tag">Demo</div>
+    <div class="slide-title">Live Demonstration</div>
+
+    <p>And on that note — I'll hand over to <strong>[colleague's name]</strong> for the live demonstration. They'll show the model running in real time: generating synthetic transactions, running them through the feature engineering pipeline, scoring them against the LightGBM model, and displaying the fraud verdict live in the dashboard.</p>
+
+    <span class="stage">[Colleague takes over for demo]</span>
+
+    <hr class="inner-divider">
+
+    <span class="sub-heading">If asked about the technical setup.</span>
+    <p>The pipeline is: a <strong>Next.js</strong> dashboard generates synthetic transactions → the transaction is sent to a <strong>Flask API</strong> running the LightGBM model → features are engineered on the fly in exactly the same way as during training → the model scores the transaction in milliseconds → the fraud verdict is shown on screen.</p>
+
+    <p>We also built a formal test suite — 19 tests across three phases verifying that model artefacts load correctly, that the feature engineering mathematics are correct, and that end-to-end inference works as expected. All 19 tests pass. That's what gives us confidence the demo will behave exactly the way we designed it to.</p>
+  </section>
+
+  <!-- ══ Q&A ══ -->
+  <section id="qa">
+    <h2>Q&amp;A Cheat Sheet</h2>
+
+    <div class="qa-card">
+      <div class="qa-q">"Why not deep learning?"</div>
+      <div class="qa-a">Gradient boosting consistently outperforms deep learning on tabular data — this has been studied and replicated. There's a well-cited 2021 paper by Shwartz-Ziv and Armon that found XGBoost wins on tabular benchmarks. Deep learning shines on images, text, audio, sequences — not structured spreadsheet data like ours.</div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q">"What is overfitting?"</div>
+      <div class="qa-a">When a model learns the training data too well — memorises noise along with patterns. Performs beautifully on data it's seen, badly on new data. You spot it when training accuracy is much higher than test accuracy. We combat it with cross-validation, regularisation, and ensemble methods like Random Forest.</div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q">"Why SMOTE and not just class weights?"</div>
+      <div class="qa-a">Both are valid. We chose SMOTE because it gives the model more diverse training signal — many different synthetic fraud examples rather than just weighting the existing ones more heavily. Class weights change the loss function; SMOTE changes the training data distribution. Results are often similar in practice, but SMOTE is more widely discussed in fraud detection literature.</div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q">"Could this work in real time?"</div>
+      <div class="qa-a">Yes — and our demo shows exactly that. LightGBM takes milliseconds to score a transaction. In production, you'd wrap it in a streaming data pipeline — transactions come in, features get engineered on the fly, the model scores, and the result goes back to the payment processor before the customer even gets a response.</div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q">"How do you know the model isn't memorising the training data?"</div>
+      <div class="qa-a">The test set. We locked away 20% of the data before any training happened. The model never saw it. The metrics — Recall 0.8399, F1 0.8807, AUC 0.9978 — are all from that locked set. If the model were memorising, it would score lower there than on training data. We also used 5-fold cross-validation during tuning, which further guards against overfitting.</div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-q">"What are the limitations of your approach?"</div>
+      <div class="qa-a">Three main ones: (1) Random train-test split — a time-based split would better simulate future performance since fraud patterns change over time. (2) We use straight-line Haversine distance, not actual travel distance. (3) This is a static dataset — a production system would need continuous retraining. Given more time we'd explore SHAP values for explainability, time-series cross-validation, and cost-sensitive learning.</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const links    = document.querySelectorAll('#sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`#sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.2 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
