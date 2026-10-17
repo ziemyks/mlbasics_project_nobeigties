@@ -1,0 +1,373 @@
+{
+  "_meta": {
+    "purpose": "Single recorded test transaction for the static 'AI pipeline' slide (#7) of the presentation deck. Do not call the API from the deck.",
+    "recorded_at": "2026-10-17",
+    "source": "POST http://127.0.0.1:5050/explain (api.py) with the 'raw' object below",
+    "model": "model_artefacts/lgbm_fraud_model_unscaled.txt (LightGBM, 300 trees, scaler folded into thresholds)",
+    "units": "raw_score, base_value, contributions and tree_leaf are log-odds; probability is 0..1"
+  },
+  "base_value": -9.2311,
+  "boosting": [
+    {
+      "raw_score": 4.0255,
+      "trees": 1
+    },
+    {
+      "raw_score": 4.1057,
+      "trees": 5
+    },
+    {
+      "raw_score": 4.2687,
+      "trees": 10
+    },
+    {
+      "raw_score": 4.7036,
+      "trees": 25
+    },
+    {
+      "raw_score": 5.2917,
+      "trees": 50
+    },
+    {
+      "raw_score": 6.0385,
+      "trees": 100
+    },
+    {
+      "raw_score": 6.3544,
+      "trees": 150
+    },
+    {
+      "raw_score": 6.4409,
+      "trees": 200
+    },
+    {
+      "raw_score": 6.2987,
+      "trees": 250
+    },
+    {
+      "raw_score": 6.4959,
+      "trees": 300
+    }
+  ],
+  "contributions": [
+    {
+      "feature": "log_amt",
+      "value": 10.4386
+    },
+    {
+      "feature": "hour",
+      "value": 3.1789
+    },
+    {
+      "feature": "age",
+      "value": 1.9721
+    },
+    {
+      "feature": "distance_km",
+      "value": -0.7406
+    },
+    {
+      "feature": "merch_lat",
+      "value": 0.3988
+    },
+    {
+      "feature": "category",
+      "value": 0.3738
+    },
+    {
+      "feature": "day_of_week",
+      "value": 0.2379
+    },
+    {
+      "feature": "long",
+      "value": 0.1944
+    },
+    {
+      "feature": "state",
+      "value": -0.1409
+    },
+    {
+      "feature": "merch_long",
+      "value": -0.1312
+    },
+    {
+      "feature": "amt",
+      "value": -0.0632
+    },
+    {
+      "feature": "lat",
+      "value": -0.0382
+    },
+    {
+      "feature": "month",
+      "value": 0.0355
+    },
+    {
+      "feature": "city_pop",
+      "value": 0.0109
+    }
+  ],
+  "dropped": [
+    "trans_date_trans_time",
+    "dob",
+    "merchant",
+    "city",
+    "trans_num",
+    "job"
+  ],
+  "encoding": {
+    "active": [
+      "category_shopping_net",
+      "state_WA"
+    ],
+    "category": "shopping_net",
+    "state": "WA",
+    "total": 27
+  },
+  "engineered": {
+    "age": 78,
+    "day_of_week": 5,
+    "distance_km": 1757.22,
+    "hour": 23,
+    "log_amt": 7.7558,
+    "month": 10
+  },
+  "is_fraud": 1,
+  "model": {
+    "learning_rate": 0.05,
+    "max_depth": 7,
+    "n_trees": 300,
+    "num_leaves": 31
+  },
+  "probability": 0.998493,
+  "raw": {
+    "amt": 2334.03,
+    "category": "shopping_net",
+    "city": "Seattle",
+    "city_pop": 99,
+    "dob": "1947-12-13",
+    "job": "Nurse",
+    "lat": 49.0231,
+    "long": -158.0001,
+    "merch_lat": 35.5343,
+    "merch_long": -169.2273,
+    "merchant": "Best Buy",
+    "state": "WA",
+    "trans_date_trans_time": "2026-10-17 23:29:20",
+    "trans_num": "3e2c7c15e4e642948121d44107864c0a"
+  },
+  "raw_score": 6.4959,
+  "threshold": 0.5,
+  "tree_leaf": 4.0255,
+  "tree_path": [
+    {
+      "feature": "log_amt",
+      "go_left": false,
+      "is_numeric": true,
+      "samples": 271685,
+      "threshold": 5.4341,
+      "value": 7.7558
+    },
+    {
+      "feature": "category_travel",
+      "go_left": true,
+      "is_numeric": false,
+      "samples": 9586,
+      "threshold": 0.0,
+      "value": 0.0
+    },
+    {
+      "feature": "log_amt",
+      "go_left": false,
+      "is_numeric": true,
+      "samples": 8612,
+      "threshold": 5.5895,
+      "value": 7.7558
+    }
+  ],
+  "validation": {
+    "present": [
+      "trans_date_trans_time",
+      "amt",
+      "lat",
+      "long",
+      "merch_lat",
+      "merch_long",
+      "category",
+      "state",
+      "dob",
+      "city_pop"
+    ],
+    "required": [
+      "trans_date_trans_time",
+      "amt",
+      "lat",
+      "long",
+      "merch_lat",
+      "merch_long",
+      "category",
+      "state",
+      "dob",
+      "city_pop"
+    ]
+  },
+  "vector": [
+    {
+      "feature": "amt",
+      "value": 2334.03
+    },
+    {
+      "feature": "lat",
+      "value": 49.0231
+    },
+    {
+      "feature": "long",
+      "value": -158.0001
+    },
+    {
+      "feature": "city_pop",
+      "value": 99.0
+    },
+    {
+      "feature": "merch_lat",
+      "value": 35.5343
+    },
+    {
+      "feature": "merch_long",
+      "value": -169.2273
+    },
+    {
+      "feature": "hour",
+      "value": 23.0
+    },
+    {
+      "feature": "day_of_week",
+      "value": 5.0
+    },
+    {
+      "feature": "month",
+      "value": 10.0
+    },
+    {
+      "feature": "age",
+      "value": 78.0
+    },
+    {
+      "feature": "distance_km",
+      "value": 1757.2229
+    },
+    {
+      "feature": "log_amt",
+      "value": 7.7558
+    },
+    {
+      "feature": "category_entertainment",
+      "value": 0.0
+    },
+    {
+      "feature": "category_food_dining",
+      "value": 0.0
+    },
+    {
+      "feature": "category_gas_transport",
+      "value": 0.0
+    },
+    {
+      "feature": "category_grocery_net",
+      "value": 0.0
+    },
+    {
+      "feature": "category_grocery_pos",
+      "value": 0.0
+    },
+    {
+      "feature": "category_health_fitness",
+      "value": 0.0
+    },
+    {
+      "feature": "category_home",
+      "value": 0.0
+    },
+    {
+      "feature": "category_kids_pets",
+      "value": 0.0
+    },
+    {
+      "feature": "category_misc_net",
+      "value": 0.0
+    },
+    {
+      "feature": "category_misc_pos",
+      "value": 0.0
+    },
+    {
+      "feature": "category_personal_care",
+      "value": 0.0
+    },
+    {
+      "feature": "category_shopping_net",
+      "value": 1.0
+    },
+    {
+      "feature": "category_shopping_pos",
+      "value": 0.0
+    },
+    {
+      "feature": "category_travel",
+      "value": 0.0
+    },
+    {
+      "feature": "state_AK",
+      "value": 0.0
+    },
+    {
+      "feature": "state_AZ",
+      "value": 0.0
+    },
+    {
+      "feature": "state_CA",
+      "value": 0.0
+    },
+    {
+      "feature": "state_CO",
+      "value": 0.0
+    },
+    {
+      "feature": "state_HI",
+      "value": 0.0
+    },
+    {
+      "feature": "state_ID",
+      "value": 0.0
+    },
+    {
+      "feature": "state_MO",
+      "value": 0.0
+    },
+    {
+      "feature": "state_NE",
+      "value": 0.0
+    },
+    {
+      "feature": "state_NM",
+      "value": 0.0
+    },
+    {
+      "feature": "state_OR",
+      "value": 0.0
+    },
+    {
+      "feature": "state_UT",
+      "value": 0.0
+    },
+    {
+      "feature": "state_WA",
+      "value": 1.0
+    },
+    {
+      "feature": "state_WY",
+      "value": 0.0
+    }
+  ],
+  "verdict": "FRAUD"
+}

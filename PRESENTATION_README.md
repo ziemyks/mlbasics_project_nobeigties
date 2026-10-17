@@ -188,4 +188,4 @@ This proves the model works outside the notebook — not just on historical data
 | Presentation slides | `Presentation/Presentation PPT.html` |
 | Speaker notes | `Presentation/Speech Notes.html` |
 | Tests | `Phase_1_testing.ipynb`, `Phase_2_testing.ipynb`, `Phase_3_testing.ipynb` |
-| Live demo | `docker-compose up --build` → open `localhost:3000` |
+| Live demo | `./start_demo.sh` (vai `docker-compose up --build`) → open `localhost:3000` |

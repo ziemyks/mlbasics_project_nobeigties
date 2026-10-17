@@ -14,6 +14,7 @@ Then send a POST request:
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib, os, random, string, uuid
+import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -22,8 +23,9 @@ from datetime import datetime, timedelta
 BASE = os.path.dirname(os.path.abspath(__file__))
 ART  = os.path.join(BASE, "model_artefacts")
 
-model         = joblib.load(os.path.join(ART, "lgbm_fraud_model.pkl"))
-scaler        = joblib.load(os.path.join(ART, "scaler.pkl"))
+# The StandardScaler is folded into the tree thresholds (see fold_scaler_into_model.py),
+# so the model takes raw, unscaled features and gives identical predictions.
+model         = lgb.Booster(model_file=os.path.join(ART, "lgbm_fraud_model_unscaled.txt"))
 feature_cols  = joblib.load(os.path.join(ART, "feature_columns.pkl"))
 num_features  = joblib.load(os.path.join(ART, "num_features.pkl"))
 
@@ -171,9 +173,6 @@ def engineer_features(raw: dict) -> pd.DataFrame:
     # 7. Align to training columns (fill missing OHE columns with 0)
     df = df.reindex(columns=feature_cols, fill_value=0)
 
-    # 8. Scale numeric features
-    df[num_features] = scaler.transform(df[num_features])
-
     return df
 
 
@@ -206,7 +205,7 @@ def predict():
 
     try:
         features = engineer_features(payload)
-        prob     = float(model.predict_proba(features)[0, 1])
+        prob     = float(model.predict(features)[0])
         pred     = int(prob >= 0.5)
 
         # Build engineered feature snapshot for educational display
@@ -234,6 +233,122 @@ def predict():
             "verdict":           "FRAUD" if pred == 1 else "Legitimate",
             "threshold":         0.5,
             "engineered_features": engineered,
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Pipeline explanation (for the "AI Pipeline" demo page) ────────────────────
+booster    = model
+TREE_0     = booster.dump_model()["tree_info"][0]["tree_structure"]
+NUM_SET    = set(num_features)
+REQUIRED   = ["trans_date_trans_time", "amt", "lat", "long",
+              "merch_lat", "merch_long", "category", "state", "dob", "city_pop"]
+DROPPED    = ["trans_date_trans_time", "dob", "merchant", "city", "trans_num", "job"]
+BOOST_STEPS = [1, 5, 10, 25, 50, 100, 150, 200, 250, 300]
+
+
+def _tree_path(row):
+    """Walk tree #0 for one feature row and record each split taken."""
+    path, node = [], TREE_0
+    while "leaf_value" not in node:
+        feat = feature_cols[node["split_feature"]]
+        thr  = node["threshold"]
+        val  = float(row[feat])
+        go_left = val <= thr
+        path.append({
+            "feature":   feat,
+            "threshold": round(float(thr), 4),
+            "value":     round(val, 4),
+            "is_numeric": feat in NUM_SET,
+            "go_left":   bool(go_left),
+            "samples":   int(node["internal_count"]),
+        })
+        node = node["left_child"] if go_left else node["right_child"]
+    return path, float(node["leaf_value"])
+
+
+def _group_contributions(contrib):
+    """Sum SHAP contributions of one-hot columns back into their source field."""
+    groups = {}
+    for feat, c in zip(feature_cols, contrib):
+        key = ("category" if feat.startswith("category_")
+               else "state" if feat.startswith("state_") else feat)
+        groups[key] = groups.get(key, 0.0) + float(c)
+    items = [{"feature": k, "value": round(v, 4)} for k, v in groups.items()]
+    return sorted(items, key=lambda x: -abs(x["value"]))
+
+
+@app.route("/explain", methods=["POST"])
+def explain():
+    """Run one transaction through the pipeline and return every stage's in/out data."""
+    payload = request.get_json(force=True)
+    if not payload:
+        return jsonify({"error": "Empty request body"}), 400
+    missing = [k for k in REQUIRED if k not in payload]
+    if missing:
+        return jsonify({"error": f"Missing fields: {missing}"}), 422
+
+    try:
+        X   = engineer_features(payload)
+        row = X.iloc[0]
+
+        dt  = pd.to_datetime(payload["trans_date_trans_time"])
+        dob = pd.to_datetime(payload["dob"])
+        engineered = {
+            "hour":        int(dt.hour),
+            "day_of_week": int(dt.dayofweek),
+            "month":       int(dt.month),
+            "age":         int((dt - dob).days // 365),
+            "distance_km": round(float(haversine_approx(
+                payload["lat"], payload["long"],
+                payload["merch_lat"], payload["merch_long"])), 2),
+            "log_amt":     round(float(np.log1p(payload["amt"])), 4),
+        }
+
+        ohe_cols = [c for c in feature_cols if c.startswith(("category_", "state_"))]
+        contrib   = booster.predict(X, pred_contrib=True)[0]
+        base      = float(contrib[-1])
+        raw_score = float(booster.predict(X, raw_score=True)[0])
+        prob      = float(booster.predict(X)[0])
+        boosting  = [{"trees": k,
+                      "raw_score": round(float(booster.predict(
+                          X, raw_score=True, num_iteration=k)[0]), 4)}
+                     for k in BOOST_STEPS]
+        path, leaf = _tree_path(row)
+        pred = int(prob >= 0.5)
+
+        return jsonify({
+            "raw": payload,
+            "validation": {"required": REQUIRED,
+                           "present": [k for k in REQUIRED if k in payload]},
+            "engineered": engineered,
+            "dropped": DROPPED,
+            "encoding": {
+                "category": payload["category"],
+                "state":    payload["state"],
+                "active":   [c for c in ohe_cols if row[c] == 1],
+                "total":    len(ohe_cols),
+            },
+            "vector":  [{"feature": f, "value": round(float(row[f]), 4)}
+                        for f in feature_cols],
+            "model": {
+                "n_trees":       booster.num_trees(),
+                "learning_rate": booster.params.get("learning_rate"),
+                "max_depth":     booster.params.get("max_depth"),
+                "num_leaves":    booster.params.get("num_leaves"),
+            },
+            "tree_path":     path,
+            "tree_leaf":     round(leaf, 4),
+            "boosting":      boosting,
+            "base_value":    round(base, 4),
+            "raw_score":     round(raw_score, 4),
+            "contributions": _group_contributions(contrib[:-1]),
+            "probability":   round(prob, 6),
+            "threshold":     0.5,
+            "is_fraud":      pred,
+            "verdict":       "FRAUD" if pred == 1 else "Legitimate",
         })
 
     except Exception as e:
